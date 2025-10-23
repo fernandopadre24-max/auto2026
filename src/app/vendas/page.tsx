@@ -205,6 +205,8 @@ export default function VendasPage() {
     
     let description = `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`;
     
+    // For "a prazo" or "parcelado", the customer comes from the details dialog.
+    // For other payment types, it comes from the globally selected customer, if any.
     const customerForSale = details?.customer || selectedCustomer;
 
     if (customerForSale) {
