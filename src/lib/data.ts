@@ -1,4 +1,4 @@
-import type { Part, RecentSale } from '@/lib/types';
+import type { Part, RecentSale, Customer } from '@/lib/types';
 
 export const parts: Part[] = [
   {
@@ -105,4 +105,47 @@ export const recentSales: RecentSale[] = [
         total: 870.00,
         status: 'Cancelado',
     }
-]
+];
+
+export const customers: Customer[] = [
+  {
+    id: '1',
+    name: 'João Silva',
+    email: 'joao.silva@email.com',
+    phone: '(11) 98765-4321',
+    totalSpent: 1250.75,
+    lastPurchase: '2023-10-15',
+  },
+  {
+    id: '2',
+    name: 'Maria Oliveira',
+    email: 'maria.o@email.com',
+    phone: '(21) 91234-5678',
+    totalSpent: 850.0,
+    lastPurchase: '2023-10-20',
+  },
+  {
+    id: '3',
+    name: 'Carlos Pereira',
+    email: 'carlos.p@email.com',
+    phone: '(31) 99999-8888',
+    totalSpent: 320.5,
+    lastPurchase: '2023-09-05',
+  },
+  {
+    id: '4',
+    name: 'Ana Costa',
+    email: 'ana.costa@email.com',
+    phone: '(41) 98888-7777',
+    totalSpent: 2150.0,
+    lastPurchase: '2023-10-22',
+  },
+  {
+    id: '5',
+    name: 'Pedro Martins',
+    email: 'pedro.m@email.com',
+    phone: '(51) 97777-6666',
+    totalSpent: 500.25,
+    lastPurchase: '2023-08-12',
+  },
+];

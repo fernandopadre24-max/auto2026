@@ -18,4 +18,13 @@ export type RecentSale = {
   items: number;
   total: number;
   status: 'Pago' | 'Pendente' | 'Cancelado';
-}
+};
+
+export type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  totalSpent: number;
+  lastPurchase: string;
+};
