@@ -13,13 +13,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
@@ -28,11 +21,10 @@ import { addDocumentNonBlocking, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+  firstName: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+  lastName: z.string().min(2, { message: 'O sobrenome deve ter pelo menos 2 caracteres.' }),
   email: z.string().email({ message: 'Insira um email válido.' }),
-  position: z.string().min(2, { message: 'O cargo é obrigatório.' }),
-  admissionDate: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Data de admissão inválida."}),
-  status: z.string().min(1, { message: 'Selecione um status.' }),
+  role: z.string().min(2, { message: 'O cargo é obrigatório.' }),
 });
 
 function SubmitButton() {
@@ -52,11 +44,10 @@ export function AddFuncionarioForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
-      position: '',
-      admissionDate: new Date().toISOString().split('T')[0],
-      status: 'Ativo',
+      role: '',
     },
   });
 
@@ -90,12 +81,25 @@ export function AddFuncionarioForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
-            name="name"
+            name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome Completo</FormLabel>
+                <FormLabel>Nome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Carlos Silva" {...field} />
+                  <Input placeholder="Ex: Carlos" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sobrenome</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Silva" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -116,50 +120,13 @@ export function AddFuncionarioForm() {
           />
           <FormField
             control={form.control}
-            name="position"
+            name="role"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Cargo</FormLabel>
                 <FormControl>
                   <Input placeholder="Ex: Vendedor" {...field} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={form.control}
-            name="admissionDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de Admissão</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Ativo">Ativo</SelectItem>
-                    <SelectItem value="Inativo">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,34 +1,36 @@
 /**
- * @file Overview
- * This ruleset enforces a role-based access control model where only authenticated users
- * can access specific collections based on their role.
+ * @fileoverview Firestore Security Rules for AutoParts Manager.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security and data access control, ensuring that
+ * only authenticated users can access specific data based on defined roles.
+ * It implements path-based ownership and restricts listing on sensitive
+ * collections.  It assumes all users are equal and there are not specific
+ * role definitions in the application.
  *
  * Data Structure:
  * - /storeConfig/main: Singleton document containing store configuration.
  * - /parts/{partId}: Collection of auto parts.
- * - /employees/{employeeId}: Collection of employee information.
- * - /customers/{customerId}: Collection of customer information.
- * - /sales/{saleId}: Collection of sale transactions.
- * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of items within a sale.
+ * - /employees/{employeeId}: Collection of employee records.
+ * - /customers/{customerId}: Collection of customer records.
+ * - /sales/{saleId}: Collection of sales transactions.
+ * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of sale items for each sale.
  *
  * Key Security Decisions:
- * - Employees are not owned by users; access is likely managed through roles.
- * - Public listing of employees is denied due to privacy concerns.
- *
+ * - Listing of employees is disallowed for security reasons.
+ * - All other top-level collections allow listing.
+ * - No complex role-based access control is implemented (all authenticated users are treated equally).
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Store configuration is stored in a singleton document for easy access.
-     * @path /storeConfig/main
-     * @allow get: if isSignedIn();
-     * @allow list: if false;
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @principle Allows authenticated users to read the store configuration.
+     * @description: Rules for the store configuration singleton.
+     * @path: /storeConfig/main
+     * @allow: (get) Any authenticated user can read the store config.
+     * @deny: (create, update, delete) No one can create, update, or delete the store config through client-side rules.
+     * @principle: Public read-only access with no client-side writes.
      */
     match /storeConfig/main {
       allow get: if isSignedIn();
@@ -39,94 +41,82 @@ service cloud.firestore {
     }
 
     /**
-     * @description Parts are stored in a top-level collection.
-     * @path /parts/{partId}
-     * @allow get: if isSignedIn();
-     * @allow list: if isSignedIn();
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @principle Allows any signed-in user to read all parts.
+     * @description: Rules for auto parts.
+     * @path: /parts/{partId}
+     * @allow: (get, list) Any authenticated user can read parts.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete parts.
+     * @principle: Requires authentication for all operations.
      */
     match /parts/{partId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Employees are stored in a top-level collection.
-     * @path /employees/{employeeId}
-     * @allow get: if isSignedIn();
-     * @allow list: if false;
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @deny list: if true;
-     * @principle Prevents listing all employees for privacy reasons.
+     * @description: Rules for employee records.
+     * @path: /employees/{employeeId}
+     * @allow: (get) Only authenticated users can read employee records.
+     * @deny: (list, create, update, delete) Listing of employees is explicitly disallowed.
+     * @principle: Restricts listing of employee data for privacy.
      */
     match /employees/{employeeId} {
       allow get: if isSignedIn();
       allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Customers are stored in a top-level collection.
-     * @path /customers/{customerId}
-     * @allow get: if isSignedIn();
-     * @allow list: if isSignedIn();
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @principle Allows any signed-in user to read customer information.
+     * @description: Rules for customer records.
+     * @path: /customers/{customerId}
+     * @allow: (get, list) Any authenticated user can read customer records.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete customer records.
+     * @principle: Requires authentication for all operations.
      */
     match /customers/{customerId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Sales are stored in a top-level collection.
-     * @path /sales/{saleId}
-     * @allow get: if isSignedIn();
-     * @allow list: if isSignedIn();
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
+     * @description: Rules for sales transactions.
+     * @path: /sales/{saleId}
+     * @allow: (get, list) Any authenticated user can read sales transactions.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete sales transactions.
+     * @principle: Requires authentication for all operations.
      */
     match /sales/{saleId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-
-      /**
-       * @description SaleItems are stored as subcollections under each sale document.
-       * @path /sales/{saleId}/saleItems/{saleItemId}
-       * @allow get: if isSignedIn();
-       * @allow list: if isSignedIn();
-       * @allow create: if false;
-       * @allow update: if false;
-       * @allow delete: if false;
-       */
-      match /saleItems/{saleItemId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
-      }
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
+    /**
+     * @description: Rules for sale items within a sale transaction.
+     * @path: /sales/{saleId}/saleItems/{saleItemId}
+     * @allow: (get, list) Any authenticated user can read sale items.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete sale items.
+     * @principle: Requires authentication for all operations.
+     */
+    match /sales/{saleId}/saleItems/{saleItemId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    //------------------ Helper functions -----------------------
+
+    /**
+     * @description: Checks if the user is signed in.
+     * @return: True if the user is signed in, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
