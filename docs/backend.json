@@ -1,5 +1,32 @@
 {
   "entities": {
+    "StoreConfig": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StoreConfig",
+      "type": "object",
+      "description": "Represents the store's configuration settings.",
+      "properties": {
+        "storeName": {
+          "type": "string",
+          "description": "The name of the store."
+        },
+        "cnpj": {
+          "type": "string",
+          "description": "The CNPJ of the store."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the store."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The contact phone number for the store."
+        }
+      },
+      "required": [
+        "storeName"
+      ]
+    },
     "Part": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Part",
@@ -249,6 +276,16 @@
   "firestore": {
     "structure": [
       {
+        "path": "/storeConfig/main",
+        "definition": {
+          "entityName": "StoreConfig",
+          "schema": {
+            "$ref": "#/backend/entities/StoreConfig"
+          },
+          "description": "Stores the main configuration for the store."
+        }
+      },
+      {
         "path": "/parts/{partId}",
         "definition": {
           "entityName": "Part",
@@ -333,6 +370,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to efficiently store and manage data for the AutoParts Manager application. It focuses on clarity, scalability, and security, adhering to the principles of Authorization Independence and Structural Segregation.  Each entity (Part, Employee, Customer, Sale, and SaleItem) has its own dedicated collection.  Path-based ownership is employed where applicable to simplify security rules.  \n\nParts are stored in a top-level `parts` collection. Employees and Customers are similarly stored in `employees` and `customers` collections respectively.\n\nSales are organized under the `sales` collection. Each sale has a `customerId` and `employeeId` to link back to the respective entities. SaleItems are stored as subcollections under each `sale` document, ensuring data locality and efficient querying of items within a specific sale. Relationships are modeled via document references.\n\n**Authorization Independence:** No `get()` calls are required in security rules, as authorization depends solely on `request.auth.uid` and the roles of the authenticated user, which is managed separately. \n\n**QAPs (Rules are not Filters):** The structure facilitates secure list operations by segregating data based on entity type and relationships. This prevents the need for complex filtering in security rules and ensures that only authorized data is accessed."
+    "reasoning": "The Firestore data structure is designed to efficiently store and manage data for the AutoParts Manager application. It focuses on clarity, scalability, and security, adhering to the principles of Authorization Independence and Structural Segregation.  Each entity (Part, Employee, Customer, Sale, SaleItem, and StoreConfig) has its own dedicated collection.  Path-based ownership is employed where applicable to simplify security rules.  \n\nStore configuration is stored in a singleton document `/storeConfig/main` for easy access.\n\nParts are stored in a top-level `parts` collection. Employees and Customers are similarly stored in `employees` and `customers` collections respectively.\n\nSales are organized under the `sales` collection. Each sale has a `customerId` and `employeeId` to link back to the respective entities. SaleItems are stored as subcollections under each `sale` document, ensuring data locality and efficient querying of items within a specific sale. Relationships are modeled via document references.\n\n**Authorization Independence:** No `get()` calls are required in security rules, as authorization depends solely on `request.auth.uid` and the roles of the authenticated user, which is managed separately. \n\n**QAPs (Rules are not Filters):** The structure facilitates secure list operations by segregating data based on entity type and relationships. This prevents the need for complex filtering in security rules and ensures that only authorized data is accessed."
   }
 }

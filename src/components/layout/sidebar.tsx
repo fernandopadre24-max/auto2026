@@ -16,6 +16,7 @@ import {
   BarChart2,
   Car,
   ShoppingCart,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -28,6 +29,7 @@ const menuItems = [
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
   { href: '/relatorios', label: 'Relatórios', icon: BarChart2 },
+  { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
 export function AppSidebar() {
