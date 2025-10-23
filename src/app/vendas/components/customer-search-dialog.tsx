@@ -33,7 +33,7 @@ export function CustomerSearchDialog({
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       const results = customers.filter(
         (customer) =>
-          customer.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+          (customer.firstName.toLowerCase() + ' ' + customer.lastName.toLowerCase()).includes(lowerCaseSearchTerm) ||
           customer.email.toLowerCase().includes(lowerCaseSearchTerm)
       );
       setFilteredCustomers(results);
@@ -65,7 +65,7 @@ export function CustomerSearchDialog({
                   className="flex items-center justify-between p-2 hover:bg-accent rounded-md"
                 >
                   <div>
-                    <p className="font-medium">{customer.name}</p>
+                    <p className="font-medium">{customer.firstName} {customer.lastName}</p>
                     <p className="text-sm text-muted-foreground">
                       {customer.email}
                     </p>

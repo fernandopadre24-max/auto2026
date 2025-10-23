@@ -25,11 +25,11 @@ import {
 import { EmployeeLoginDialog } from './components/employee-login-dialog';
 import {
   addDocumentNonBlocking,
-  useCollection,
   useFirestore,
-  useMemoFirebase,
 } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
+import { useData } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type CartItem = {
   part: Part;
@@ -48,23 +48,7 @@ export default function VendasPage() {
   const router = useRouter();
   const firestore = useFirestore();
 
-  const partsCollection = useMemoFirebase(
-    () => collection(firestore, 'parts'),
-    [firestore]
-  );
-  const { data: allPartsData } = useCollection<Part>(partsCollection);
-
-  const customersCollection = useMemoFirebase(
-    () => collection(firestore, 'customers'),
-    [firestore]
-  );
-  const { data: allCustomersData } = useCollection<Customer>(customersCollection);
-
-  const employeesCollection = useMemoFirebase(
-    () => collection(firestore, 'employees'),
-    [firestore]
-  );
-  const { data: allEmployeesData } = useCollection<Employee>(employeesCollection);
+  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading } = useData();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
@@ -186,7 +170,7 @@ export default function VendasPage() {
       if (storedEmployee) {
         const employee: Employee = JSON.parse(storedEmployee);
         setAuthenticatedEmployee(employee);
-        setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+        setLastAction(`Operador: ${employee.firstName}. Caixa livre.`);
       }
     }
     setIsAuthenticating(false);
@@ -255,7 +239,7 @@ export default function VendasPage() {
         )} em ${totalItems} itens (${paymentMethod}).`;
 
         if (customerForSale) {
-          description += ` Cliente: ${customerForSale.name}.`;
+          description += ` Cliente: ${customerForSale.firstName} ${customerForSale.lastName}.`;
         }
 
         if (details) {
@@ -322,17 +306,20 @@ export default function VendasPage() {
   const handleLogin = (employee: Employee) => {
     setAuthenticatedEmployee(employee);
     sessionStorage.setItem('authenticatedEmployee', JSON.stringify(employee));
-    setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+    setLastAction(`Operador: ${employee.firstName}. Caixa livre.`);
     toast({
-      title: `Bem-vindo, ${employee.name}!`,
+      title: `Bem-vindo, ${employee.firstName}!`,
       description: 'Login efetuado com sucesso.',
     });
   };
 
-  if (isAuthenticating || !allPartsData || !allCustomersData || !allEmployeesData) {
+  if (isAuthenticating || isDataLoading) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
-            <p>Carregando dados...</p>
+             <div className="flex flex-col items-center gap-4">
+                <p>Carregando dados do PDV...</p>
+                <Skeleton className="h-4 w-64" />
+             </div>
         </div>
     );
   }
@@ -357,7 +344,7 @@ export default function VendasPage() {
           setSelectedCustomer(customer);
           toast({
             title: 'Cliente Selecionado',
-            description: `${customer.name} foi associado à venda.`,
+            description: `${customer.firstName} ${customer.lastName} foi associado à venda.`,
           });
           setIsCustomerDialogOpen(false);
         }}
@@ -463,7 +450,7 @@ export default function VendasPage() {
               </p>
               <div className="py-1 text-center font-bold">
                 <p>---- CUPOM NÃO FISCAL ----</p>
-                {selectedCustomer && <p>CLIENTE: {selectedCustomer.name}</p>}
+                {selectedCustomer && <p>CLIENTE: {selectedCustomer.firstName} {selectedCustomer.lastName}</p>}
               </div>
               <div className="border-b border-dashed border-gray-400 pb-1">
                 <div className="grid grid-cols-6">
@@ -622,7 +609,7 @@ export default function VendasPage() {
                 <Input
                   className="mt-1"
                   placeholder="Vendedor(a)"
-                  value={authenticatedEmployee.name}
+                  value={`${authenticatedEmployee.firstName} ${authenticatedEmployee.lastName}`}
                   readOnly
                 />
               </div>
@@ -652,7 +639,7 @@ export default function VendasPage() {
             <div className="space-y-2">
               <InfoBox
                 label="OPERADOR"
-                value={authenticatedEmployee.name.toUpperCase()}
+                value={`${authenticatedEmployee.firstName} ${authenticatedEmployee.lastName}`.toUpperCase()}
                 smallText
                 center
               />

@@ -34,13 +34,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
 
 type SalesReportProps = {
   sales: Sale[];
   employees: Employee[];
   parts: Part[];
+  customers: Customer[];
 };
 
 const formatCurrency = (amount: number) => {
@@ -59,13 +58,10 @@ export function SalesReport({
   sales,
   employees,
   parts,
+  customers
 }: SalesReportProps) {
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
   
-  const firestore = useFirestore();
-  const customersCollection = useMemoFirebase(() => collection(firestore, 'customers'), [firestore]);
-  const { data: customers } = useCollection<Customer>(customersCollection);
-
   const filteredSales = React.useMemo(() => {
     if (selectedEmployeeId === 'all') {
       return sales;
@@ -79,7 +75,7 @@ export function SalesReport({
       { name: string; total: number; sales: number }
     >();
     employees.forEach((emp) => {
-      salesMap.set(emp.id, { name: emp.name, total: 0, sales: 0 });
+      salesMap.set(emp.id, { name: `${emp.firstName} ${emp.lastName}`, total: 0, sales: 0 });
     });
 
     sales.forEach((sale) => {
@@ -100,11 +96,13 @@ export function SalesReport({
   const totalSales = filteredSales.length;
 
   const getEmployeeName = (employeeId: string) => {
-    return employees.find(e => e.id === employeeId)?.name || 'N/A';
+    const employee = employees.find(e => e.id === employeeId);
+    return employee ? `${employee.firstName} ${employee.lastName}`: 'N/A';
   }
 
   const getCustomerName = (customerId: string) => {
-    return customers?.find(c => c.id === customerId)?.name || 'N/A';
+    const customer = customers.find(c => c.id === customerId);
+    return customer ? `${customer.firstName} ${customer.lastName}`: 'N/A';
   }
 
 
@@ -178,7 +176,7 @@ export function SalesReport({
                   <SelectItem value="all">Todos os Funcionários</SelectItem>
                   {employees.map((employee) => (
                     <SelectItem key={employee.id} value={employee.id}>
-                      {employee.name}
+                      {employee.firstName} {employee.lastName}
                     </SelectItem>
                   ))}
                 </SelectContent>

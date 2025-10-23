@@ -5,17 +5,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { PartsTable } from './components/parts-table';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useData } from '@/lib/data';
 
 export default function PartsPage() {
-  const firestore = useFirestore();
-  const partsCollection = useMemoFirebase(
-    () => collection(firestore, 'parts'),
-    [firestore]
-  );
-  const { data: parts, isLoading } = useCollection(partsCollection);
+  const { parts, isLoading } = useData();
 
   return (
     <div className="flex flex-col gap-8">

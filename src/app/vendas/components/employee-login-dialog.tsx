@@ -27,7 +27,7 @@ type EmployeeLoginDialogProps = {
   onCancel: () => void;
 };
 
-const ALLOWED_POSITIONS = ['Caixa', 'Gerente', 'Administrador'];
+const ALLOWED_POSITIONS = ['Vendedor', 'Caixa', 'Gerente', 'Administrador'];
 
 export function EmployeeLoginDialog({
   isOpen,
@@ -59,13 +59,13 @@ export function EmployeeLoginDialog({
       return;
     }
 
-    if (ALLOWED_POSITIONS.includes(employee.position)) {
+    if (ALLOWED_POSITIONS.includes(employee.role)) {
       onLogin(employee);
     } else {
       toast({
         variant: 'destructive',
         title: 'Acesso Negado',
-        description: `O cargo "${employee.position}" não tem permissão para acessar o PDV.`,
+        description: `O cargo "${employee.role}" não tem permissão para acessar o PDV.`,
       });
     }
   };
@@ -88,7 +88,7 @@ export function EmployeeLoginDialog({
             <SelectContent>
               {employees.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
-                  {employee.name} - ({employee.position})
+                  {employee.firstName} {employee.lastName} - ({employee.role})
                 </SelectItem>
               ))}
             </SelectContent>

@@ -4,17 +4,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { FuncionariosTable } from './components/funcionarios-table';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useData } from '@/lib/data';
 
 export default function FuncionariosPage() {
-  const firestore = useFirestore();
-  const employeesCollection = useMemoFirebase(
-    () => collection(firestore, 'employees'),
-    [firestore]
-  );
-  const { data: employees, isLoading } = useCollection(employeesCollection);
+  const { employees, isLoading } = useData();
 
   return (
     <div className="flex flex-col gap-8">

@@ -93,7 +93,7 @@ export function FinalizeSaleDialog({
                     </SelectTrigger>
                     <SelectContent>
                         {customers.map(customer => (
-                            <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                            <SelectItem key={customer.id} value={customer.id}>{customer.firstName} {customer.lastName}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

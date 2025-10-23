@@ -4,17 +4,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { ClientesTable } from './components/clientes-table';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useData } from '@/lib/data';
 
 export default function ClientesPage() {
-  const firestore = useFirestore();
-  const customersCollection = useMemoFirebase(
-    () => collection(firestore, 'customers'),
-    [firestore]
-  );
-  const { data: customers, isLoading } = useCollection(customersCollection);
+  const { customers, isLoading } = useData();
 
   return (
     <div className="flex flex-col gap-8">

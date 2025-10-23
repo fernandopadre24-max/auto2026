@@ -3,6 +3,7 @@ import './globals.css';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
+import { DataProvider } from '@/lib/data';
 
 export const metadata: Metadata = {
   title: 'AutoParts Manager',
@@ -24,7 +25,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <MainLayout>{children}</MainLayout>
+          <DataProvider>
+            <MainLayout>{children}</MainLayout>
+          </DataProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>
