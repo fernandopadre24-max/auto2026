@@ -37,3 +37,21 @@ export type Employee = {
     admissionDate: string;
     status: 'Ativo' | 'Inativo';
 }
+
+export type SaleItem = {
+    partId: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+}
+
+export type Sale = {
+    id: string;
+    employee: Employee;
+    customer?: Customer;
+    items: SaleItem[];
+    total: number;
+    paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro' | 'À Vista' | 'Prazo' | 'Parcelado';
+    installments: number;
+    date: string;
+};

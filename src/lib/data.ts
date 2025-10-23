@@ -1,4 +1,4 @@
-import type { Part, RecentSale, Customer, Employee } from '@/lib/types';
+import type { Part, RecentSale, Customer, Employee, Sale } from '@/lib/types';
 
 export const parts: Part[] = [
   {
@@ -191,4 +191,71 @@ export const employees: Employee[] = [
         admissionDate: '2021-11-01',
         status: 'Inativo'
     }
-]
+];
+
+export const sales: Sale[] = [
+    {
+        id: 'SALE-001',
+        employee: employees.find(e => e.id === '2')!,
+        customer: customers.find(c => c.id === '1'),
+        items: [
+            { partId: '1', quantity: 2, unitPrice: 25.0, discount: 0 },
+            { partId: '2', quantity: 1, unitPrice: 120.0, discount: 25.0 }
+        ],
+        total: 145.00,
+        paymentMethod: 'Cartão',
+        installments: 1,
+        date: '2024-05-01'
+    },
+    {
+        id: 'SALE-002',
+        employee: employees.find(e => e.id === '4')!,
+        customer: customers.find(c => c.id === '2'),
+        items: [{ partId: '5', quantity: 1, unitPrice: 380.0, discount: 0 }],
+        total: 380.00,
+        paymentMethod: 'PIX',
+        installments: 1,
+        date: '2024-05-01'
+    },
+    {
+        id: 'SALE-003',
+        employee: employees.find(e => e.id === '2')!,
+        items: [{ partId: '3', quantity: 5, unitPrice: 22.5, discount: 0 }],
+        total: 112.50,
+        paymentMethod: 'Dinheiro',
+        installments: 1,
+        date: '2024-05-02'
+    },
+    {
+        id: 'SALE-004',
+        employee: employees.find(e => e.id === '4')!,
+        customer: customers.find(c => c.id === '4'),
+        items: [{ partId: '1', quantity: 1, unitPrice: 25.0, discount: 0 }],
+        total: 25.00,
+        paymentMethod: 'Cartão',
+        installments: 1,
+        date: '2024-05-03'
+    },
+    {
+        id: 'SALE-005',
+        employee: employees.find(e => e.id === '1')!,
+        customer: customers.find(c => c.id === '5'),
+        items: [{ partId: '4', quantity: 3, unitPrice: 290.0, discount: 0 }],
+        total: 870.00,
+        paymentMethod: 'Parcelado',
+        installments: 3,
+        date: '2024-05-03'
+    },
+    {
+        id: 'SALE-006',
+        employee: employees.find(e => e.id === '2')!,
+        items: [
+            { partId: '2', quantity: 2, unitPrice: 120.0, discount: 0 },
+            { partId: '3', quantity: 10, unitPrice: 22.5, discount: 0 }
+        ],
+        total: 465.00,
+        paymentMethod: 'Parcelado',
+        installments: 2,
+        date: '2024-05-04'
+    }
+];
