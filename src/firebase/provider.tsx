@@ -133,7 +133,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     };
   }, [firebaseApp, firestore, auth, userAuthState]);
 
-  if (contextValue.isUserLoading) {
+  // CRITICAL FIX: Do not render children until user is loaded and not null.
+  if (contextValue.isUserLoading || !contextValue.user) {
       return (
          <div className="flex h-screen w-full items-center justify-center">
             <div className="flex flex-col items-center gap-4">
