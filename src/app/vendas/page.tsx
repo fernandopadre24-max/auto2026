@@ -1,22 +1,8 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -25,211 +11,204 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-const products = [
-  { code: '0000000297073', description: 'TESTE' },
+const saleItems = [
+  {
+    item: '001',
+    code: '0004',
+    description: 'TINTA P/ CARIMBO REDEX AUTOMATIC',
+    quantity: '1UN',
+    unitPrice: 5.3,
+    subtotal: 5.3,
+    status: 'active',
+  },
+  {
+    item: '002',
+    code: '0004',
+    description: 'TINTA P/ CARIMBO REDEX AUTOMATIC',
+    quantity: '1UN',
+    unitPrice: 5.3,
+    discount: 0.79,
+    subtotal: 4.51,
+    status: 'active',
+  },
+  {
+    item: '003',
+    code: '0005',
+    description: 'PENDRIVE SCANDISK 04 GB',
+    quantity: '3UN',
+    unitPrice: 20.21,
+    subtotal: 60.63,
+    status: 'active',
+  },
+  {
+    item: 'ITEM 2 CANCELADO',
+    code: '00007897254102542',
+    description: 'TINTA P/ CARIMBO REDEX AUTOMATIC',
+    subtotal: -4.51,
+    status: 'canceled',
+  },
 ];
 
-const payments = [
-    { card: 'HIPERCARD (Hipercard)', nsu: '1111', authorization: '2222', value: 'R$ 5,00' },
-    { card: 'CAPITAL (Sorocred)', nsu: '3333', authorization: '4444', value: 'R$ 5,00' },
-];
+const formatCurrency = (value: number) =>
+  `R$ ${value.toFixed(2).replace('.', ',')}`;
 
 export default function VendasPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title="Finalizar Venda" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Section */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Items */}
-            <div className="md:col-span-1 flex flex-col gap-4">
-              <Card>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Descricao</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <TableRow key={product.code} className="bg-blue-200">
-                        <TableCell>{product.code}</TableCell>
-                        <TableCell>{product.description}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Card>
-              <Card>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Código</TableHead>
-                            <TableHead>Nome do Cliente</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>1</TableCell>
-                            <TableCell>CONSUMIDOR</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-              </Card>
-              <div className="flex gap-2">
-                <Button>Iniciar (F5)</Button>
-                <Button variant="outline">Devolução (F4)</Button>
-                <Button variant="outline">Import</Button>
+    <div className="flex h-[calc(100vh-100px)] w-full flex-col bg-slate-100 p-2 font-mono text-sm">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between gap-4 rounded-t-lg bg-blue-800 p-2 text-white">
+        <div className="flex flex-1 items-center gap-2">
+          <Label htmlFor="item-search">
+            F6 - DESCRIÇÃO/CÓDIGO ITEM OU CÓDIGO DE BARRAS
+          </Label>
+          <Input
+            id="item-search"
+            className="flex-1 bg-white text-black"
+            placeholder="F7 - FORA DO ESTOQUE"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="quantity">QUANTIDADE</Label>
+          <Input id="quantity" className="w-24 bg-white text-black" defaultValue="1" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 gap-2 overflow-hidden">
+        {/* Left Panel - Receipt */}
+        <div className="flex w-1/2 flex-col">
+          <div className="flex-1 bg-yellow-100 p-2 font-mono text-black">
+            <p>CNPJ: 11.222.333/0001-44</p>
+            <p>IE: 11.777.888</p>
+            <p className="border-b border-dashed border-gray-400 pb-1">
+              15/12/2014 22:46:47
+            </p>
+            <p className="py-1 text-center">---- CUPOM NÃO FISCAL ----</p>
+            <div className="border-b border-dashed border-gray-400 pb-1">
+              <div className="grid grid-cols-6">
+                <span>ITEM</span>
+                <span>CÓDIGO</span>
+                <span className="col-span-2">DESCRICAO</span>
+                <span>QTD</span>
+                <span className="text-right">VL ITEM</span>
               </div>
             </div>
-
-            {/* Payment Details */}
-            <div className="md:col-span-2">
-              <Card className="bg-gray-100">
-                <CardContent className="p-4 space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">
-                        F4 - FORMA DE PAGAMENTO
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <RadioGroup defaultValue="credito">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="caixa" id="caixa" />
-                          <Label htmlFor="caixa">CAIXA</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="credito" id="credito" />
-                          <Label htmlFor="credito">CREDIÁRIO</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="entrada" id="entrada" />
-                          <Label htmlFor="entrada">ENTRADA / CREDIÁRIO</Label>
-                        </div>
-                      </RadioGroup>
-                    </CardContent>
-                  </Card>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader className="p-2 bg-blue-800 text-white rounded-t-md">
-                        <CardTitle className="text-sm">SUB TOTAL (R$)</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 text-center">
-                        <p className="text-2xl font-bold">10,00</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="p-2 bg-blue-800 text-white rounded-t-md">
-                        <CardTitle className="text-sm">TOTAL DA VENDA (R$)</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 text-center">
-                        <p className="text-2xl font-bold">10,00</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 text-sm">
-                    <Input value="0,00 %" />
-                    <Input value="0,00" />
-                    <Input value="0,00 %" />
-                    <Input value="0,00" />
-                  </div>
-                   <div className="grid grid-cols-3 gap-4">
-                     <Card className="bg-red-600 text-white">
-                        <CardHeader className="p-2"><CardTitle className="text-sm">SALDO (R$)</CardTitle></CardHeader>
-                        <CardContent className="p-4 text-center"><p className="text-2xl font-bold">0,00</p></CardContent>
-                     </Card>
-                     <Card className="bg-red-600 text-white">
-                        <CardHeader className="p-2"><CardTitle className="text-sm">VALOR RECEBIDO (R$)</CardTitle></CardHeader>
-                        <CardContent className="p-4 text-center"><p className="text-2xl font-bold">10,00</p></CardContent>
-                     </Card>
-                     <Card className="bg-red-600 text-white">
-                        <CardHeader className="p-2"><CardTitle className="text-sm">TROCO (R$)</CardTitle></CardHeader>
-                        <CardContent className="p-4 text-center"><p className="text-2xl font-bold">0,00</p></CardContent>
-                     </Card>
-                   </div>
-                   <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm">DADOS DO CARTÃO DE DÉBITO</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input placeholder="Valor" />
-                            <Select>
-                                <SelectTrigger><SelectValue placeholder="Bandeira" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="hipercard">HIPERCARD (Hipercard)</SelectItem>
-                                    <SelectItem value="sorocred">CAPITAL (Sorocred)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Input placeholder="NSU" />
-                            <Input placeholder="Autorização" />
-                        </div>
-                        <Button className="w-full" variant="secondary">GRAVAR</Button>
-                    </CardContent>
-                   </Card>
-                   <Card>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Cartão</TableHead>
-                                    <TableHead>NSU</TableHead>
-                                    <TableHead>Autorização</TableHead>
-                                    <TableHead>Valor</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {payments.map((p, i) => (
-                                    <TableRow key={i} className={i === 0 ? "bg-blue-300" : ""}>
-                                        <TableCell>{p.card}</TableCell>
-                                        <TableCell>{p.nsu}</TableCell>
-                                        <TableCell>{p.authorization}</TableCell>
-                                        <TableCell>{p.value}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                   </Card>
-                </CardContent>
-              </Card>
+            <ScrollArea className="h-[250px]">
+              {saleItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`py-1 ${
+                    item.status === 'canceled' ? 'bg-blue-400 text-white' : ''
+                  }`}
+                >
+                  {item.status === 'active' ? (
+                    <>
+                      <div className="grid grid-cols-6">
+                        <span>{item.item}</span>
+                        <span>{item.code}</span>
+                        <span className="col-span-4">{item.description}</span>
+                      </div>
+                      <div className="grid grid-cols-6">
+                        <span className="col-start-4">
+                          {item.quantity} X R$ {item.unitPrice?.toFixed(2)}
+                          {item.discount && ` DESC R$ ${item.discount.toFixed(2)}`}
+                        </span>
+                        <span className="col-span-2 text-right">
+                          SUBTOTAL R$ {item.subtotal.toFixed(2)}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <p>
+                      {item.item} - {item.code} {item.description} -R${' '}
+                      {Math.abs(item.subtotal).toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </ScrollArea>
+          </div>
+          <div className="bg-blue-800 p-2 text-center font-bold text-white">
+            <p>CANCEL. DE ITEM TINTA P/ CARIMBO REDEX AUTOMATIC</p>
+          </div>
+          <div className="flex justify-between bg-blue-700 p-2 text-white">
+            <span>Nº. DE ITENS: 02 | QUANTIDADES: 4,00</span>
+            <div className="flex gap-4">
+                <Button size="sm" className="bg-blue-500 text-white">CLIENTES - F9</Button>
+                <Button size="sm" className="bg-blue-500 text-white">PARCELAS - F10</Button>
+                <Button size="sm" className="bg-blue-500 text-white">ULT. VENDA - F11</Button>
             </div>
+          </div>
+           <div className="flex justify-between bg-blue-700 p-2 text-white">
+                <Button size="sm" className="bg-blue-500 text-white">MAIS FUNÇÕES</Button>
+                <Button size="sm" className="bg-blue-500 text-white">INSTRUÇÕES</Button>
+                <Button size="sm" className="bg-blue-500 text-white">CALCULADORA - F12</Button>
+            </div>
+        </div>
+
+        {/* Middle Panel - Totals */}
+        <div className="flex w-1/4 flex-col justify-between bg-blue-700 p-4 text-white">
+          <div className="space-y-4">
+            <InfoBox label="VALOR UNITÁRIO:" value={formatCurrency(5.30)} />
+            <InfoBox label="QUANTIDADE:" value="1 UN" />
+            <InfoBox label="SUBTOTAL:" value={formatCurrency(4.51)} />
+            <InfoBox label="CÓDIGO DE BARRAS:" value="7897254102542" smallText />
+            <InfoBox label="CÓDIGO DE CADASTRO:" value="00004" smallText />
+          </div>
+          <div className="mt-4">
+            <Card className="bg-blue-800 text-white">
+              <CardHeader className="p-2">
+                <CardTitle className="text-lg">VALOR TOTAL DA VENDA</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-5xl font-bold">{formatCurrency(65.93)}</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Right Section */}
-        <div className="lg:col-span-1 flex flex-col gap-2">
-            <Card className="bg-gray-100">
-                <CardContent className="p-2 space-y-2">
-                    <Label className="flex justify-between items-center bg-gray-300 p-2 rounded-md">
-                        <span>DINHEIRO</span>
-                        <Input className="w-24 text-right" defaultValue="0,00" />
-                    </Label>
-                    <Label className="flex justify-between items-center bg-gray-300 p-2 rounded-md">
-                        <span>TOTAL DO(S) CHEQUE(S)</span>
-                        <Input className="w-24 text-right" defaultValue="0,00" />
-                    </Label>
-                    <Label className="flex justify-between items-center bg-gray-300 p-2 rounded-md">
-                        <span>CARTÃO DE CRÉDITO</span>
-                        <Input className="w-24 text-right" defaultValue="0,00" />
-                    </Label>
-                    <Label className="flex justify-between items-center bg-red-600 text-white p-2 rounded-md">
-                        <span>CARTÃO DE DÉBITO</span>
-                        <Input className="w-24 text-right bg-white text-black" defaultValue="10,00" />
-                    </Label>
-                    <Label className="flex justify-between items-center bg-red-600 text-white p-2 rounded-md">
-                        <span>CRÉDITO UTILIZADO</span>
-                        <Input className="w-24 text-right bg-white text-black" defaultValue="0,00" />
-                    </Label>
-                     <div className="bg-red-600 text-white p-2 rounded-md text-right">
-                        Crédito Disponível: R$ 0,00
-                    </div>
-                </CardContent>
-            </Card>
+        {/* Right Panel - Actions */}
+        <div className="flex w-1/4 flex-col justify-between bg-slate-200 p-4">
+           <div>
+            <div className="mb-2 rounded-md border border-blue-800 bg-white p-2">
+                <p className="font-bold text-blue-800">PDV RÉPLEIS CONTAS 1.2</p>
+                <Input className="mt-1" placeholder="DA"/>
+            </div>
+             <div className="space-y-2">
+                <ActionButton>FINALIZAR VENDA - F1</ActionButton>
+                <ActionButton>CANCELAR VENDA - F2</ActionButton>
+                <ActionButton>VENDER A VISTA - F3</ActionButton>
+                <ActionButton>VENDER A PRAZO - F4</ActionButton>
+                <ActionButton>VENDER PARCELADO - F5</ActionButton>
+                <ActionButton>SAIR DO P.D.V - ESC</ActionButton>
+            </div>
+           </div>
+           <div className="space-y-2">
+            <InfoBox label="OPERADOR" value="LUIZ" smallText center />
+            <InfoBox label="DATA DA VENDA" value="15/12/2014" smallText center />
+            <InfoBox label="HORA ATUAL" value="22:49:49" smallText center />
+           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function InfoBox({ label, value, smallText = false, center = false }: { label: string, value: string, smallText?: boolean, center?: boolean}) {
+  return (
+    <div className={`rounded-lg border-2 border-black bg-white p-2 text-black ${center ? 'text-center' : ''}`}>
+      <p className="text-xs">{label}</p>
+      <p className={`${smallText ? 'text-lg' : 'text-3xl'} font-bold`}>{value}</p>
+    </div>
+  );
+}
+
+function ActionButton({ children }: { children: React.ReactNode }) {
+    return (
+        <Button className="w-full justify-center bg-blue-600 py-3 text-base text-white hover:bg-blue-700">
+            {children}
+        </Button>
+    )
 }
