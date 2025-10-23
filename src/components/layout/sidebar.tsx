@@ -15,6 +15,7 @@ import {
   BookUser,
   BarChart2,
   Car,
+  ShoppingCart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,6 +23,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
   { href: '/', label: 'Início', icon: Home },
+  { href: '/vendas', label: 'Vendas', icon: ShoppingCart },
   { href: '/pecas', label: 'Peças', icon: Wrench },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
