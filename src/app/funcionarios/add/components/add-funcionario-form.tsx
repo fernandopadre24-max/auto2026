@@ -24,6 +24,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { addDocumentNonBlocking, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -45,6 +47,7 @@ function SubmitButton() {
 export function AddFuncionarioForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,14 +61,27 @@ export function AddFuncionarioForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simula o envio para uma API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(values);
-    toast({
-      title: 'Sucesso!',
-      description: 'Novo funcionário adicionado.',
-    });
-    router.push('/funcionarios');
+    try {
+        const employeeCollection = collection(firestore, 'employees');
+        await addDocumentNonBlocking(employeeCollection, {
+            ...values,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+
+        toast({
+            title: 'Sucesso!',
+            description: 'Novo funcionário adicionado.',
+        });
+        router.push('/funcionarios');
+    } catch(error) {
+         toast({
+            variant: 'destructive',
+            title: 'Erro',
+            description: 'Não foi possível adicionar o funcionário.',
+        });
+        console.error("Error adding employee:", error);
+    }
   }
 
   return (

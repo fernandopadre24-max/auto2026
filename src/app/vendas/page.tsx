@@ -13,11 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  parts as allPartsData,
-  customers as allCustomersData,
-  employees as allEmployeesData,
-} from '@/lib/data';
 import type { Part, Customer, Employee } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -28,6 +23,13 @@ import {
   type FinalizeSaleDetails,
 } from './components/finalize-sale-dialog';
 import { EmployeeLoginDialog } from './components/employee-login-dialog';
+import {
+  addDocumentNonBlocking,
+  useCollection,
+  useFirestore,
+  useMemoFirebase,
+} from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
 
 type CartItem = {
   part: Part;
@@ -44,6 +46,26 @@ const formatCurrency = (value: number | undefined | null) => {
 export default function VendasPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const partsCollection = useMemoFirebase(
+    () => collection(firestore, 'parts'),
+    [firestore]
+  );
+  const { data: allPartsData } = useCollection<Part>(partsCollection);
+
+  const customersCollection = useMemoFirebase(
+    () => collection(firestore, 'customers'),
+    [firestore]
+  );
+  const { data: allCustomersData } = useCollection<Customer>(customersCollection);
+
+  const employeesCollection = useMemoFirebase(
+    () => collection(firestore, 'employees'),
+    [firestore]
+  );
+  const { data: allEmployeesData } = useCollection<Employee>(employeesCollection);
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,15 +89,15 @@ export default function VendasPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   const filteredParts = useMemo(() => {
-    if (searchTerm) {
+    if (searchTerm && allPartsData) {
       return allPartsData.filter(
         (part) =>
           part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          part.sku.toLowerCase().includes(searchTerm.toLowerCase())
+          (part.sku && part.sku.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     return [];
-  }, [searchTerm]);
+  }, [searchTerm, allPartsData]);
 
   const handleAddItemToCart = (part: Part) => {
     if (!part) return;
@@ -110,7 +132,7 @@ export default function VendasPage() {
     sessionStorage.removeItem('authenticatedEmployee');
     setAuthenticatedEmployee(null);
     router.push('/');
-  }
+  };
 
   const restoreLastSale = useCallback(() => {
     if (lastSaleItems.length === 0) {
@@ -150,7 +172,7 @@ export default function VendasPage() {
         e.preventDefault();
         setIsInstallmentsDialogOpen(true);
       }
-       if (e.key === 'F11') {
+      if (e.key === 'F11') {
         e.preventDefault();
         restoreLastSale();
       }
@@ -160,15 +182,14 @@ export default function VendasPage() {
 
     // Check for logged-in employee in session storage
     if (!authenticatedEmployee) {
-        const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
-        if (storedEmployee) {
-          const employee: Employee = JSON.parse(storedEmployee);
-          setAuthenticatedEmployee(employee);
-          setLastAction(`Operador: ${employee.name}. Caixa livre.`);
-        }
+      const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
+      if (storedEmployee) {
+        const employee: Employee = JSON.parse(storedEmployee);
+        setAuthenticatedEmployee(employee);
+        setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+      }
     }
     setIsAuthenticating(false);
-
 
     return () => {
       clearInterval(timer);
@@ -178,7 +199,8 @@ export default function VendasPage() {
 
   const subtotal = useMemo(() => {
     return cartItems.reduce(
-      (acc, item) => acc + (item.part.salePrice * item.quantity - item.discount),
+      (acc, item) =>
+        acc + (item.part.salePrice * item.quantity - item.discount),
       0
     );
   }, [cartItems]);
@@ -191,7 +213,10 @@ export default function VendasPage() {
     return cartItems.reduce((acc, item) => acc + item.quantity, 0);
   }, [cartItems]);
 
-  const finishSale = (paymentMethod: string, details?: FinalizeSaleDetails) => {
+  const finishSale = (
+    paymentMethod: string,
+    details?: FinalizeSaleDetails
+  ) => {
     if (cartItems.length === 0) {
       toast({
         variant: 'destructive',
@@ -202,28 +227,57 @@ export default function VendasPage() {
     }
 
     setLastSaleItems([...cartItems]);
-    
-    let description = `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`;
-    
-    // For "a prazo" or "parcelado", the customer comes from the details dialog.
-    // For other payment types, it comes from the globally selected customer, if any.
+
     const customerForSale = details?.customer || selectedCustomer;
 
-    if (customerForSale) {
-        description += ` Cliente: ${customerForSale.name}.`;
-    }
+    const saleData = {
+      employeeId: authenticatedEmployee?.id,
+      customerId: customerForSale?.id || null,
+      items: cartItems.map((item) => ({
+        partId: item.part.id,
+        quantity: item.quantity,
+        unitPrice: item.part.salePrice,
+        discount: item.discount,
+      })),
+      total: subtotal,
+      paymentMethod: details?.paymentMethod || paymentMethod,
+      installments: details?.installments || 1,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
 
-    if (details) {
-      description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
-    }
+    const salesCollection = collection(firestore, 'sales');
+    addDocumentNonBlocking(salesCollection, saleData)
+      .then(() => {
+        let description = `Total de ${formatCurrency(
+          subtotal
+        )} em ${totalItems} itens (${paymentMethod}).`;
 
-    toast({
-      title: 'Venda Finalizada!',
-      description: description,
-    });
+        if (customerForSale) {
+          description += ` Cliente: ${customerForSale.name}.`;
+        }
 
-    resetSaleState();
-    setLastAction('Venda finalizada. Caixa livre.');
+        if (details) {
+          description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
+        }
+
+        toast({
+          title: 'Venda Finalizada!',
+          description: description,
+        });
+
+        resetSaleState();
+        setLastAction('Venda finalizada. Caixa livre.');
+      })
+      .catch((error) => {
+        console.error('Error saving sale: ', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao Salvar',
+          description: 'Não foi possível registrar a venda no banco de dados.',
+        });
+      });
   };
 
   const handleOpenFinalizeDialog = (type: 'prazo' | 'parcelado') => {
@@ -264,7 +318,7 @@ export default function VendasPage() {
       description: description,
     });
   };
-  
+
   const handleLogin = (employee: Employee) => {
     setAuthenticatedEmployee(employee);
     sessionStorage.setItem('authenticatedEmployee', JSON.stringify(employee));
@@ -275,15 +329,19 @@ export default function VendasPage() {
     });
   };
 
-  if (isAuthenticating) {
-    return null; // or a loading spinner
+  if (isAuthenticating || !allPartsData || !allCustomersData || !allEmployeesData) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <p>Carregando dados...</p>
+        </div>
+    );
   }
 
   if (!authenticatedEmployee) {
     return (
       <EmployeeLoginDialog
         isOpen={true}
-        employees={allEmployeesData}
+        employees={allEmployeesData || []}
         onLogin={handleLogin}
         onCancel={() => router.push('/')}
       />
@@ -303,7 +361,7 @@ export default function VendasPage() {
           });
           setIsCustomerDialogOpen(false);
         }}
-        customers={allCustomersData}
+        customers={allCustomersData || []}
       />
       <InstallmentsDialog
         isOpen={isInstallmentsDialogOpen}
@@ -322,7 +380,7 @@ export default function VendasPage() {
         isOpen={isFinalizeSaleDialogOpen}
         onOpenChange={setIsFinalizeSaleDialogOpen}
         subtotal={subtotal}
-        customers={allCustomersData}
+        customers={allCustomersData || []}
         saleType={saleType}
         onConfirm={(details) => {
           finishSale(saleType, details);
@@ -359,7 +417,12 @@ export default function VendasPage() {
               onChange={(e) => setQuantity(Number(e.target.value) || 1)}
               min="1"
             />
-            <Select onValueChange={(value) => setUnit(value as 'UN' | 'PC' | 'JG' | 'KT')} value={unit}>
+            <Select
+              onValueChange={(value) =>
+                setUnit(value as 'UN' | 'PC' | 'JG' | 'KT')
+              }
+              value={unit}
+            >
               <SelectTrigger className="w-24 bg-white text-black">
                 <SelectValue placeholder="Unidade" />
               </SelectTrigger>
@@ -423,7 +486,8 @@ export default function VendasPage() {
                     </div>
                     <div className="grid grid-cols-6">
                       <span className="col-start-4 col-span-1">
-                        {item.quantity}{item.unit} X {formatCurrency(item.part.salePrice)}
+                        {item.quantity}
+                        {item.unit} X {formatCurrency(item.part.salePrice)}
                         {item.discount > 0 &&
                           ` DESC ${formatCurrency(item.discount)}`}
                       </span>
@@ -534,13 +598,15 @@ export default function VendasPage() {
                   <CardTitle className="text-lg">VALOR TOTAL DA VENDA</CardTitle>
                   {installments > 1 && (
                     <p className="text-sm">
-                      ({installments}x de {formatCurrency(subtotal / installments)}
-                      )
+                      ({installments}x de{' '}
+                      {formatCurrency(subtotal / installments)})
                     </p>
                   )}
                 </CardHeader>
                 <CardContent className="text-center">
-                  <p className="text-5xl font-bold">{formatCurrency(subtotal)}</p>
+                  <p className="text-5xl font-bold">
+                    {formatCurrency(subtotal)}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -550,8 +616,15 @@ export default function VendasPage() {
           <div className="flex w-1/4 flex-col justify-between bg-slate-200 p-4">
             <div>
               <div className="mb-2 rounded-md border border-blue-800 bg-white p-2">
-                <p className="font-bold text-blue-800">PDV AUTO PARTS MANAGER</p>
-                <Input className="mt-1" placeholder="Vendedor(a)" value={authenticatedEmployee.name} readOnly />
+                <p className="font-bold text-blue-800">
+                  PDV AUTO PARTS MANAGER
+                </p>
+                <Input
+                  className="mt-1"
+                  placeholder="Vendedor(a)"
+                  value={authenticatedEmployee.name}
+                  readOnly
+                />
               </div>
               <div className="space-y-2">
                 <ActionButton onClick={() => finishSale('Indefinido')}>
@@ -577,7 +650,12 @@ export default function VendasPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <InfoBox label="OPERADOR" value={authenticatedEmployee.name.toUpperCase()} smallText center />
+              <InfoBox
+                label="OPERADOR"
+                value={authenticatedEmployee.name.toUpperCase()}
+                smallText
+                center
+              />
               <InfoBox
                 label="DATA DA VENDA"
                 value={

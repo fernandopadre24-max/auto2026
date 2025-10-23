@@ -9,6 +9,9 @@ export type Part = {
   manufacturer: string;
   vehicleModel: string;
   vehicleYear: number;
+  condition: string;
+  technicalSpecifications: string;
+  description: string;
 };
 
 export type RecentSale = {
@@ -47,8 +50,8 @@ export type SaleItem = {
 
 export type Sale = {
     id: string;
-    employee: Employee;
-    customer?: Customer;
+    employeeId: string;
+    customerId?: string;
     items: SaleItem[];
     total: number;
     paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro' | 'À Vista' | 'Prazo' | 'Parcelado';
