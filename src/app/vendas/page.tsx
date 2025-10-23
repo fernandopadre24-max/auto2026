@@ -70,6 +70,10 @@ export default function VendasPage() {
         e.preventDefault();
         setIsInstallmentsDialogOpen(true);
       }
+       if (e.key === 'F11') {
+        e.preventDefault();
+        restoreLastSale();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
