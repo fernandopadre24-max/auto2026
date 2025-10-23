@@ -7,6 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   parts as allPartsData,
   customers as allCustomersData,
   employees as allEmployeesData,
@@ -25,6 +32,7 @@ import { EmployeeLoginDialog } from './components/employee-login-dialog';
 type CartItem = {
   part: Part;
   quantity: number;
+  unit: 'UN' | 'PC' | 'JG' | 'KT';
   discount: number;
 };
 
@@ -41,6 +49,7 @@ export default function VendasPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState<Part | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [unit, setUnit] = useState<'UN' | 'PC' | 'JG' | 'KT'>('UN');
   const [lastAction, setLastAction] = useState('Caixa Livre');
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -82,12 +91,13 @@ export default function VendasPage() {
         )
       );
     } else {
-      setCartItems([...cartItems, { part, quantity, discount: 0 }]);
+      setCartItems([...cartItems, { part, quantity, unit, discount: 0 }]);
     }
     setLastAction(`Adicionado: ${quantity}x ${part.name}`);
     setSearchTerm('');
     setSelectedItem(null);
     setQuantity(1);
+    setUnit('UN');
   };
 
   const handleSelectSearchedItem = (part: Part) => {
@@ -335,11 +345,22 @@ export default function VendasPage() {
             <Input
               id="quantity"
               type="number"
-              className="w-24 bg-white text-black"
+              className="w-20 bg-white text-black"
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value) || 1)}
               min="1"
             />
+            <Select onValueChange={setUnit} value={unit}>
+              <SelectTrigger className="w-24 bg-white text-black">
+                <SelectValue placeholder="Unidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UN">UN</SelectItem>
+                <SelectItem value="PC">PC</SelectItem>
+                <SelectItem value="JG">JG</SelectItem>
+                <SelectItem value="KT">KT</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {filteredParts.length > 0 && (
             <div className="absolute top-full left-0 z-10 w-1/2 bg-white border rounded-md shadow-lg mt-1">
@@ -393,7 +414,7 @@ export default function VendasPage() {
                     </div>
                     <div className="grid grid-cols-6">
                       <span className="col-start-4 col-span-1">
-                        {item.quantity}UN X {formatCurrency(item.part.salePrice)}
+                        {item.quantity}{item.unit} X {formatCurrency(item.part.salePrice)}
                         {item.discount > 0 &&
                           ` DESC ${formatCurrency(item.discount)}`}
                       </span>
@@ -480,7 +501,7 @@ export default function VendasPage() {
                 label="VALOR UNITÁRIO:"
                 value={formatCurrency(selectedItem?.salePrice)}
               />
-              <InfoBox label="QUANTIDADE:" value={`${quantity} UN`} />
+              <InfoBox label="QUANTIDADE:" value={`${quantity} ${unit}`} />
               <InfoBox
                 label="SUBTOTAL:"
                 value={formatCurrency(
