@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,7 +102,7 @@ export default function VendasPage() {
     router.push('/');
   }
 
-  const restoreLastSale = () => {
+  const restoreLastSale = useCallback(() => {
     if (lastSaleItems.length === 0) {
       toast({
         title: 'Nenhuma Venda Recente',
@@ -116,7 +116,7 @@ export default function VendasPage() {
       title: 'Última Venda Restaurada',
       description: 'Os itens da última venda foram adicionados ao carrinho.',
     });
-  };
+  }, [lastSaleItems, toast]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && selectedItem) {
@@ -149,11 +149,13 @@ export default function VendasPage() {
     window.addEventListener('keydown', handleKeyDown);
 
     // Check for logged-in employee in session storage
-    const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
-    if (storedEmployee) {
-      const employee: Employee = JSON.parse(storedEmployee);
-      setAuthenticatedEmployee(employee);
-      setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+    if (!authenticatedEmployee) {
+        const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
+        if (storedEmployee) {
+          const employee: Employee = JSON.parse(storedEmployee);
+          setAuthenticatedEmployee(employee);
+          setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+        }
     }
     setIsAuthenticating(false);
 
@@ -162,7 +164,7 @@ export default function VendasPage() {
       clearInterval(timer);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [authenticatedEmployee]);
+  }, [authenticatedEmployee, restoreLastSale]);
 
   const subtotal = useMemo(() => {
     return cartItems.reduce(
