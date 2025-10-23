@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { CustomerSearchDialog } from './components/customer-search-dialog';
 import { InstallmentsDialog } from './components/installments-dialog';
+import { FinalizeSaleDialog, type FinalizeSaleDetails } from './components/finalize-sale-dialog';
 
 type CartItem = {
   part: Part;
@@ -39,6 +40,9 @@ export default function VendasPage() {
     const [installments, setInstallments] = useState(1);
     const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
     const [isInstallmentsDialogOpen, setIsInstallmentsDialogOpen] = useState(false);
+    const [isFinalizeSaleDialogOpen, setIsFinalizeSaleDialogOpen] = useState(false);
+    const [saleType, setSaleType] = useState<'prazo' | 'parcelado'>('prazo');
+
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
@@ -122,7 +126,7 @@ export default function VendasPage() {
         return cartItems.reduce((acc, item) => acc + item.quantity, 0);
     }, [cartItems]);
 
-    const finishSale = (paymentMethod: string) => {
+    const finishSale = (paymentMethod: string, details?: FinalizeSaleDetails) => {
         if (cartItems.length === 0) {
             toast({
                 variant: 'destructive',
@@ -134,14 +138,37 @@ export default function VendasPage() {
 
         setLastSaleItems([...cartItems]);
 
+        let description = `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`;
+        if (details) {
+            description += ` Cliente: ${details.customer.name}. Pagamento: ${details.paymentMethod} em ${details.installments}x.`
+        }
+
         toast({
             title: 'Venda Finalizada!',
-            description: `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`
+            description: description,
         });
+
+        resetSaleState();
+        setLastAction('Venda finalizada. Caixa livre.');
+    }
+
+    const handleOpenFinalizeDialog = (type: 'prazo' | 'parcelado') => {
+        if (cartItems.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'Carrinho Vazio',
+                description: 'Adicione itens antes de finalizar a venda.'
+            });
+            return;
+        }
+        setSaleType(type);
+        setIsFinalizeSaleDialogOpen(true);
+    }
+
+    const resetSaleState = () => {
         setCartItems([]);
         setSelectedCustomer(null);
         setInstallments(1);
-        setLastAction('Venda finalizada. Caixa livre.');
     }
 
     const cancelSale = () => {
@@ -149,9 +176,7 @@ export default function VendasPage() {
           setLastAction('Nenhuma venda para cancelar. Caixa livre.');
           return;
         }
-        setCartItems([]);
-        setSelectedCustomer(null);
-        setInstallments(1);
+        resetSaleState();
         setLastAction('Venda cancelada. Caixa livre.');
         toast({
             variant: 'destructive',
@@ -211,6 +236,17 @@ export default function VendasPage() {
             setIsInstallmentsDialogOpen(false);
         }}
         subtotal={subtotal}
+    />
+     <FinalizeSaleDialog
+        isOpen={isFinalizeSaleDialogOpen}
+        onOpenChange={setIsFinalizeSaleDialogOpen}
+        subtotal={subtotal}
+        customers={allCustomersData}
+        saleType={saleType}
+        onConfirm={(details) => {
+            finishSale(saleType, details);
+            setIsFinalizeSaleDialogOpen(false);
+        }}
     />
     <div className="flex h-[calc(100vh-100px)] w-full flex-col bg-slate-100 p-2 font-mono text-sm">
       {/* Top Bar */}
@@ -346,8 +382,8 @@ export default function VendasPage() {
                 <ActionButton onClick={() => finishSale('Indefinido')}>FINALIZAR VENDA - F1</ActionButton>
                 <ActionButton onClick={cancelSale}>CANCELAR VENDA - F2</ActionButton>
                 <ActionButton onClick={() => finishSale('À Vista')}>VENDER A VISTA - F3</ActionButton>
-                <ActionButton onClick={() => finishSale('À Prazo')}>VENDER A PRAZO - F4</ActionButton>
-                <ActionButton onClick={() => finishSale('Parcelado')}>VENDER PARCELADO - F5</ActionButton>
+                <ActionButton onClick={() => handleOpenFinalizeDialog('prazo')}>VENDER A PRAZO - F4</ActionButton>
+                <ActionButton onClick={() => handleOpenFinalizeDialog('parcelado')}>VENDER PARCELADO - F5</ActionButton>
                 <ActionButton onClick={() => router.push('/')}>SAIR DO P.D.V - ESC</ActionButton>
             </div>
            </div>
