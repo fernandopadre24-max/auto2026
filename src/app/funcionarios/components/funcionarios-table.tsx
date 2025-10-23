@@ -24,6 +24,7 @@ import {
   getFilteredRowModel,
 } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 type FuncionariosTableProps = {
   data: Employee[];
@@ -50,11 +51,17 @@ export const columns: ColumnDef<Employee>[] = [
       const employee = row.original;
       return (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Editar</span>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href={`/funcionarios/${employee.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Editar</span>
+            </Link>
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-red-500 hover:text-red-600"
+          >
             <Trash2 className="h-4 w-4" />
             <span className="sr-only">Demitir</span>
           </Button>
@@ -66,7 +73,8 @@ export const columns: ColumnDef<Employee>[] = [
 
 export function FuncionariosTable({ data }: FuncionariosTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
     data,
@@ -88,7 +96,9 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
       <div className="flex items-center">
         <Input
           placeholder="Filtrar por nome..."
-          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
+          value={
+            (table.getColumn('firstName')?.getFilterValue() as string) ?? ''
+          }
           onChange={(event) =>
             table.getColumn('firstName')?.setFilterValue(event.target.value)
           }
@@ -145,7 +155,7 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
           </TableBody>
         </Table>
       </div>
-       <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"

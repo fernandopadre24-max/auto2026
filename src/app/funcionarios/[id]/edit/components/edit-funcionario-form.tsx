@@ -14,8 +14,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { useData } from '@/lib/data';
+import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   firstName: z
@@ -29,6 +32,10 @@ const formSchema = z.object({
   role: z.string().min(2, { message: 'O cargo é obrigatório.' }),
 });
 
+type EditFuncionarioFormProps = {
+  employeeId: string;
+};
+
 function SubmitButton() {
   const { pending } = useForm({
     resolver: zodResolver(formSchema),
@@ -36,14 +43,17 @@ function SubmitButton() {
 
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? <Loader2 className="animate-spin" /> : 'Salvar Funcionário'}
+      {pending ? <Loader2 className="animate-spin" /> : 'Salvar Alterações'}
     </Button>
   );
 }
 
-export function AddFuncionarioForm() {
+export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const { employees, isLoading } = useData();
+
+  const employee = employees.find((e) => e.id === employeeId);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,22 +66,36 @@ export function AddFuncionarioForm() {
     },
   });
 
+  useEffect(() => {
+    if (employee) {
+      form.reset(employee);
+    }
+  }, [employee, form]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      console.log('Saving new employee (mock):', values);
+      console.log('Updating employee (mock):', employeeId, values);
       toast({
         title: 'Sucesso!',
-        description: 'Novo funcionário adicionado.',
+        description: 'Dados do funcionário atualizados.',
       });
       router.push('/funcionarios');
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: 'Não foi possível adicionar o funcionário.',
+        description: 'Não foi possível atualizar os dados do funcionário.',
       });
-      console.error('Error adding employee:', error);
+      console.error('Error updating employee:', error);
     }
+  }
+
+  if (isLoading) {
+    return <Skeleton className="h-96 w-full" />;
+  }
+
+  if (!employee) {
+    return <p>Funcionário não encontrado.</p>;
   }
 
   return (
@@ -152,7 +176,7 @@ export function AddFuncionarioForm() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.back()}
+            onClick={() => router.push('/funcionarios')}
           >
             Cancelar
           </Button>
