@@ -202,10 +202,17 @@ export default function VendasPage() {
     }
 
     setLastSaleItems([...cartItems]);
-
+    
     let description = `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`;
+    
+    const customerForSale = details?.customer || selectedCustomer;
+
+    if (customerForSale) {
+        description += ` Cliente: ${customerForSale.name}.`;
+    }
+
     if (details) {
-      description += ` Cliente: ${details.customer.name}. Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
+      description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
     }
 
     toast({
@@ -350,7 +357,7 @@ export default function VendasPage() {
               onChange={(e) => setQuantity(Number(e.target.value) || 1)}
               min="1"
             />
-            <Select onValueChange={setUnit} value={unit}>
+            <Select onValueChange={(value) => setUnit(value as 'UN' | 'PC' | 'JG' | 'KT')} value={unit}>
               <SelectTrigger className="w-24 bg-white text-black">
                 <SelectValue placeholder="Unidade" />
               </SelectTrigger>
