@@ -42,7 +42,7 @@ export default function VendasPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading } = useData();
+  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading, config } = useData();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
@@ -423,8 +423,11 @@ export default function VendasPage() {
           {/* Left Panel - Receipt */}
           <div className="flex w-1/2 flex-col">
             <div className="flex-1 bg-yellow-100 p-2 font-mono text-black">
-              <p>CNPJ: 11.222.333/0001-44</p>
-              <p>IE: 11.777.888</p>
+              <div className="text-center font-bold">
+                  <p>{config.storeName}</p>
+              </div>
+              <p>Endereço: {config.address}</p>
+              <p>CNPJ: {config.cnpj}</p>
               <p className="border-b border-dashed border-gray-400 pb-1">
                 {currentDateTime
                   ? currentDateTime.toLocaleString('pt-BR')
