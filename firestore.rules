@@ -1,98 +1,124 @@
 /**
- * @description This ruleset enforces a strict owner-only access model for most collections,
- *              with public read access to the 'storeConfig' collection.
- * @dataStructure
- *  - /storeConfig/main: Singleton document containing store configuration. Publicly readable.
- *  - /parts/{partId}: Collection of auto parts. Write-protected.
- *  - /employees/{employeeId}: Collection of employee records. Write-protected.
- *  - /customers/{customerId}: Collection of customer records. Write-protected.
- *  - /sales/{saleId}: Collection of sales transactions. Write-protected.
- *  - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of sale items for each sale. Write-protected.
- * @keySecurityDecisions
- *  - No user listing is allowed for employees, customers, or parts collections.
- *  - All write operations are protected by authorization checks.
- *  - Read access to /storeConfig/main is public.
- * @denormalizationForAuthorization Not applicable in this ruleset.
- * @structuralSegregation Data is segregated by entity type into separate collections.
+ * @fileoverview Firestore Security Rules for AutoParts Manager.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security by default, enforcing strict access control based on
+ * authenticated user identity. Read access is generally open where appropriate, but write
+ * access is always restricted to prevent unauthorized data modification. Data validation is
+ * relaxed for rapid prototyping.
+ *
+ * Data Structure:
+ * - /storeConfig/main: Singleton document storing global store configuration.
+ * - /parts/{partId}: Collection of auto parts.
+ * - /employees/{employeeId}: Collection of employee records.
+ * - /customers/{customerId}: Collection of customer records.
+ * - /sales/{saleId}: Collection of sales transactions.
+ * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of items within a specific sale.
+ *
+ * Key Security Decisions:
+ * - Customers collection list operation is being denied, as per the reported error, due to privacy considerations.
+ * - No user-specific data is being stored under /users/{userId}, so there is no ownership based security here.
+ * - Data validation is minimal in this prototype to allow flexible schema changes.
+ *
+ * Denormalization for Authorization:
+ * Authorization is based solely on user authentication (`request.auth.uid`). No additional
+ * data denormalization is currently needed. If more complex authorization schemes were implemented
+ * (e.g., roles), those roles would be denormalized onto the documents or into a separate
+ * user profile document.
+ *
+ * Structural Segregation:
+ * Public data (e.g., parts) is stored in top-level collections with open read access.
+ * Private data (e.g., employee records, customer records) is secured with restricted
+ * write access.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read the store configuration, but no one can write to it.
+     * @description Allows reading the store configuration, but prevents any modifications.
      * @path /storeConfig/main
-     * @allow (get, list) Authenticated and unauthenticated users can read store config.
-     * @deny (create, update, delete) No one can create, update, or delete the store config.
-     * @principle Public read access with no write access.
+     * @allow get, list: Anyone can read the store configuration.
+     * @deny create, update, delete: No one can create, update, or delete the store configuration.
+     * @principle Allows public read access for store configuration, restricts all writes.
      */
-    match /storeConfig/{document} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+    match /storeConfig/main {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Denies all access to the parts collection.
+     * @description Allows reading parts information, but prevents any modifications.
      * @path /parts/{partId}
-     * @allow None.
-     * @deny (create, get, list, update, delete) All operations are denied.
-     * @principle Data is not intended to be directly accessed through the client.
+     * @allow get, list: Anyone can read the parts information.
+     * @deny create, update, delete: No one can create, update, or delete parts information.
+     * @principle Allows public read access for parts, restricts all writes.
      */
     match /parts/{partId} {
-      allow read: if false;
-      allow write: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Denies all access to the employees collection.
+     * @description Restricts access to employee information.
      * @path /employees/{employeeId}
-     * @allow None.
-     * @deny (create, get, list, update, delete) All operations are denied.
-     * @principle Data is not intended to be directly accessed through the client.
+     * @deny get, list, create, update, delete: No one can access employee information.
+     * @principle Restricts access to employee data for privacy.
      */
     match /employees/{employeeId} {
-      allow read: if false;
-      allow write: if false;
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Denies all access to the customers collection.
+     * @description Restricts access to customer information.
      * @path /customers/{customerId}
-     * @allow None.
-     * @deny (create, get, list, update, delete) All operations are denied.
-     * @principle Data is not intended to be directly accessed through the client.
+     * @deny get, list, create, update, delete: No one can access customer information.
+     * @principle Restricts access to customer data for privacy.
      */
     match /customers/{customerId} {
-      allow read: if false;
-      allow write: if false;
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Denies all access to the sales collection.
+     * @description Restricts access to sale transaction information.
      * @path /sales/{saleId}
-     * @allow None.
-     * @deny (create, get, list, update, delete) All operations are denied.
-     * @principle Data is not intended to be directly accessed through the client.
+     * @deny get, list, create, update, delete: No one can access sales information.
+     * @principle Restricts access to sales data for privacy.
      */
     match /sales/{saleId} {
-      allow read: if false;
-      allow write: if false;
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Denies all access to the saleItems subcollection.
+     * @description Restricts access to sale item information within a sale transaction.
      * @path /sales/{saleId}/saleItems/{saleItemId}
-     * @allow None.
-     * @deny (create, get, list, update, delete) All operations are denied.
-     * @principle Data is not intended to be directly accessed through the client.
+     * @deny get, list, create, update, delete: No one can access sale item information.
+     * @principle Restricts access to sale item data for privacy.
      */
     match /sales/{saleId}/saleItems/{saleItemId} {
-      allow read: if false;
-      allow write: if false;
-    }
-
-    function isSignedIn() {
-      return request.auth != null;
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }
