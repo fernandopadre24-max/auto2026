@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { parts as allPartsData } from '@/lib/data';
-import type { Part } from '@/lib/types';
+import { parts as allPartsData, customers as allCustomersData } from '@/lib/data';
+import type { Part, Customer } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { CustomerSearchDialog } from './components/customer-search-dialog';
+import { InstallmentsDialog } from './components/installments-dialog';
 
 type CartItem = {
   part: Part;
@@ -33,10 +35,30 @@ export default function VendasPage() {
     const [quantity, setQuantity] = useState(1);
     const [lastAction, setLastAction] = useState('Caixa Livre');
     const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [installments, setInstallments] = useState(1);
+    const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
+    const [isInstallmentsDialogOpen, setIsInstallmentsDialogOpen] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
-        return () => clearInterval(timer);
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'F9') {
+                e.preventDefault();
+                setIsCustomerDialogOpen(true);
+            }
+            if (e.key === 'F10') {
+              e.preventDefault();
+              setIsInstallmentsDialogOpen(true);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
     }, []);
 
     useEffect(() => {
@@ -117,6 +139,8 @@ export default function VendasPage() {
             description: `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`
         });
         setCartItems([]);
+        setSelectedCustomer(null);
+        setInstallments(1);
         setLastAction('Venda finalizada. Caixa livre.');
     }
 
@@ -126,6 +150,8 @@ export default function VendasPage() {
           return;
         }
         setCartItems([]);
+        setSelectedCustomer(null);
+        setInstallments(1);
         setLastAction('Venda cancelada. Caixa livre.');
         toast({
             variant: 'destructive',
@@ -159,6 +185,33 @@ export default function VendasPage() {
 
 
   return (
+    <>
+    <CustomerSearchDialog
+        isOpen={isCustomerDialogOpen}
+        onOpenChange={setIsCustomerDialogOpen}
+        onSelectCustomer={(customer) => {
+            setSelectedCustomer(customer);
+            toast({
+                title: 'Cliente Selecionado',
+                description: `${customer.name} foi associado à venda.`
+            });
+            setIsCustomerDialogOpen(false);
+        }}
+        customers={allCustomersData}
+    />
+    <InstallmentsDialog
+        isOpen={isInstallmentsDialogOpen}
+        onOpenChange={setIsInstallmentsDialogOpen}
+        onConfirm={(count) => {
+            setInstallments(count);
+            toast({
+                title: 'Parcelas Definidas',
+                description: `Venda definida para ${count}x.`
+            });
+            setIsInstallmentsDialogOpen(false);
+        }}
+        subtotal={subtotal}
+    />
     <div className="flex h-[calc(100vh-100px)] w-full flex-col bg-slate-100 p-2 font-mono text-sm">
       {/* Top Bar */}
       <div className="relative flex items-center justify-between gap-4 rounded-t-lg bg-blue-800 p-2 text-white">
@@ -208,7 +261,10 @@ export default function VendasPage() {
             <p className="border-b border-dashed border-gray-400 pb-1">
               {currentDateTime ? currentDateTime.toLocaleString('pt-BR') : '...'}
             </p>
-            <p className="py-1 text-center">---- CUPOM NÃO FISCAL ----</p>
+            <div className="py-1 text-center font-bold">
+                <p>---- CUPOM NÃO FISCAL ----</p>
+                {selectedCustomer && <p>CLIENTE: {selectedCustomer.name}</p>}
+            </div>
             <div className="border-b border-dashed border-gray-400 pb-1">
               <div className="grid grid-cols-6">
                 <span className="col-span-1">ITEM</span>
@@ -245,8 +301,8 @@ export default function VendasPage() {
           <div className="flex justify-between bg-blue-700 p-2 text-white">
             <span>Nº. DE ITENS: {cartItems.length} | QUANTIDADES: {totalQuantity}</span>
             <div className="flex gap-4">
-                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Clientes (F9)', 'Função não implementada.')}>CLIENTES - F9</Button>
-                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Parcelas (F10)', 'Função não implementada.')}>PARCELAS - F10</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => setIsCustomerDialogOpen(true)}>CLIENTES - F9</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => setIsInstallmentsDialogOpen(true)}>PARCELAS - F10</Button>
                 <Button size="sm" className="bg-blue-500 text-white" onClick={restoreLastSale}>ULT. VENDA - F11</Button>
             </div>
           </div>
@@ -268,8 +324,9 @@ export default function VendasPage() {
           </div>
           <div className="mt-4">
             <Card className="bg-blue-800 text-white">
-              <CardHeader className="p-2">
+              <CardHeader className="p-2 text-center">
                 <CardTitle className="text-lg">VALOR TOTAL DA VENDA</CardTitle>
+                 {installments > 1 && <p className="text-sm">({installments}x de {formatCurrency(subtotal / installments)})</p>}
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-5xl font-bold">{formatCurrency(subtotal)}</p>
@@ -302,6 +359,7 @@ export default function VendasPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -321,5 +379,3 @@ function ActionButton({ children, onClick }: { children: React.ReactNode, onClic
         </Button>
     )
 }
-
-    
