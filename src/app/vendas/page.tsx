@@ -56,9 +56,11 @@ export default function VendasPage() {
   const [saleType, setSaleType] = useState<'prazo' | 'parcelado'>('prazo');
   const [authenticatedEmployee, setAuthenticatedEmployee] =
     useState<Employee | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!authenticatedEmployee) return;
       if (e.key === 'F9') {
@@ -72,6 +74,16 @@ export default function VendasPage() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
+
+    // Check for logged-in employee in session storage
+    const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
+    if (storedEmployee) {
+      const employee: Employee = JSON.parse(storedEmployee);
+      setAuthenticatedEmployee(employee);
+      setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+    }
+    setIsAuthenticating(false);
+
 
     return () => {
       clearInterval(timer);
@@ -127,7 +139,7 @@ export default function VendasPage() {
       handleAddItemToCart(selectedItem);
     }
     if (e.key === 'Escape') {
-      router.push('/');
+      handleLogout();
     }
   };
 
@@ -226,20 +238,33 @@ export default function VendasPage() {
       description: description,
     });
   };
+  
+  const handleLogin = (employee: Employee) => {
+    setAuthenticatedEmployee(employee);
+    sessionStorage.setItem('authenticatedEmployee', JSON.stringify(employee));
+    setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+    toast({
+      title: `Bem-vindo, ${employee.name}!`,
+      description: 'Login efetuado com sucesso.',
+    });
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('authenticatedEmployee');
+    setAuthenticatedEmployee(null);
+    router.push('/');
+  }
+
+  if (isAuthenticating) {
+    return null; // or a loading spinner
+  }
 
   if (!authenticatedEmployee) {
     return (
       <EmployeeLoginDialog
         isOpen={true}
         employees={allEmployeesData}
-        onLogin={(employee) => {
-          setAuthenticatedEmployee(employee);
-          setLastAction(`Operador: ${employee.name}. Caixa livre.`);
-          toast({
-            title: `Bem-vindo, ${employee.name}!`,
-            description: 'Login efetuado com sucesso.',
-          });
-        }}
+        onLogin={handleLogin}
         onCancel={() => router.push('/')}
       />
     );
@@ -515,7 +540,7 @@ export default function VendasPage() {
                 >
                   VENDER PARCELADO - F5
                 </ActionButton>
-                <ActionButton onClick={() => router.push('/')}>
+                <ActionButton onClick={handleLogout}>
                   SAIR DO P.D.V - ESC
                 </ActionButton>
               </div>
