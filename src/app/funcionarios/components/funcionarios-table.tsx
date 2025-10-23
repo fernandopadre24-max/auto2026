@@ -38,7 +38,9 @@ type FuncionariosTableProps = {
 };
 
 const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    // Adiciona o T00:00:00 para garantir que a data seja interpretada no fuso horário local e não em UTC.
+    const date = new Date(`${dateString}T00:00:00`);
+    return date.toLocaleDateString('pt-BR');
 }
 
 export const columns: ColumnDef<Employee>[] = [
