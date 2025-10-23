@@ -39,7 +39,6 @@ export default function VendasPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredParts, setFilteredParts] = useState<Part[]>([]);
   const [selectedItem, setSelectedItem] = useState<Part | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [lastAction, setLastAction] = useState('Caixa Livre');
@@ -91,17 +90,15 @@ export default function VendasPage() {
     };
   }, [authenticatedEmployee]);
 
-  useEffect(() => {
+  const filteredParts = useMemo(() => {
     if (searchTerm) {
-      const results = allPartsData.filter(
+      return allPartsData.filter(
         (part) =>
           part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           part.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredParts(results);
-    } else {
-      setFilteredParts([]);
     }
+    return [];
   }, [searchTerm]);
 
   const handleAddItemToCart = (part: Part) => {
@@ -123,14 +120,12 @@ export default function VendasPage() {
     setLastAction(`Adicionado: ${quantity}x ${part.name}`);
     setSearchTerm('');
     setSelectedItem(null);
-    setFilteredParts([]);
     setQuantity(1);
   };
 
   const handleSelectSearchedItem = (part: Part) => {
     setSelectedItem(part);
     setSearchTerm(part.name);
-    setFilteredParts([]);
     document.getElementById('item-search')?.focus();
   };
 
