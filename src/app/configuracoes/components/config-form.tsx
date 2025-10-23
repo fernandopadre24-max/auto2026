@@ -16,13 +16,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
-import {
-  setDocumentNonBlocking,
-  useDoc,
-  useFirestore,
-  useMemoFirebase,
-} from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -46,13 +39,15 @@ function SubmitButton() {
 
 export function ConfigForm() {
   const { toast } = useToast();
-  const firestore = useFirestore();
-
-  const configDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'storeConfig', 'main') : null),
-    [firestore]
-  );
-  const { data: configData, isLoading } = useDoc<StoreConfig>(configDocRef);
+  
+  // Mocked data, as Firebase is removed
+  const configData: StoreConfig = {
+    storeName: 'AutoParts Manager',
+    cnpj: '12.345.678/0001-99',
+    address: 'Rua Principal, 123, Centro',
+    phone: '(11) 98765-4321'
+  };
+  const isLoading = false;
 
   const form = useForm<StoreConfig>({
     resolver: zodResolver(formSchema),
@@ -71,9 +66,8 @@ export function ConfigForm() {
   }, [configData, form]);
 
   async function onSubmit(values: StoreConfig) {
-    if (!configDocRef) return;
     try {
-      setDocumentNonBlocking(configDocRef, values, { merge: true });
+      console.log('Saving config (mock):', values);
       toast({
         title: 'Sucesso!',
         description: 'As configurações da loja foram atualizadas.',

@@ -23,11 +23,6 @@ import {
   type FinalizeSaleDetails,
 } from './components/finalize-sale-dialog';
 import { EmployeeLoginDialog } from './components/employee-login-dialog';
-import {
-  addDocumentNonBlocking,
-  useFirestore,
-} from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
 import { useData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -46,7 +41,6 @@ const formatCurrency = (value: number | undefined | null) => {
 export default function VendasPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const firestore = useFirestore();
 
   const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading } = useData();
 
@@ -227,41 +221,29 @@ export default function VendasPage() {
       paymentMethod: details?.paymentMethod || paymentMethod,
       installments: details?.installments || 1,
       date: new Date().toISOString(),
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     };
 
-    const salesCollection = collection(firestore, 'sales');
-    addDocumentNonBlocking(salesCollection, saleData)
-      .then(() => {
-        let description = `Total de ${formatCurrency(
-          subtotal
-        )} em ${totalItems} itens (${paymentMethod}).`;
+    console.log("Saving sale data (mock):", saleData);
 
-        if (customerForSale) {
-          description += ` Cliente: ${customerForSale.firstName} ${customerForSale.lastName}.`;
-        }
+    let description = `Total de ${formatCurrency(
+        subtotal
+    )} em ${totalItems} itens (${paymentMethod}).`;
 
-        if (details) {
-          description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
-        }
+    if (customerForSale) {
+        description += ` Cliente: ${customerForSale.firstName} ${customerForSale.lastName}.`;
+    }
 
-        toast({
-          title: 'Venda Finalizada!',
-          description: description,
-        });
+    if (details) {
+        description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
+    }
 
-        resetSaleState();
-        setLastAction('Venda finalizada. Caixa livre.');
-      })
-      .catch((error) => {
-        console.error('Error saving sale: ', error);
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao Salvar',
-          description: 'Não foi possível registrar a venda no banco de dados.',
-        });
-      });
+    toast({
+        title: 'Venda Finalizada!',
+        description: description,
+    });
+
+    resetSaleState();
+    setLastAction('Venda finalizada. Caixa livre.');
   };
 
   const handleOpenFinalizeDialog = (type: 'prazo' | 'parcelado') => {

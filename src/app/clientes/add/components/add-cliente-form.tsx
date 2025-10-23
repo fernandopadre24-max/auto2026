@@ -14,27 +14,30 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useFormStatus } from 'react-dom';
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
   lastName: z.string().min(2, { message: 'O sobrenome deve ter pelo menos 2 caracteres.' }),
   email: z.string().email({ message: 'Insira um email válido.' }),
-  role: z.string().min(2, { message: 'O cargo é obrigatório.' }),
+  phoneNumber: z.string().optional(),
+  address: z.string().optional(),
 });
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useForm({
+    resolver: zodResolver(formSchema),
+  });
+
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? <Loader2 className="animate-spin" /> : 'Salvar Funcionário'}
+      {pending ? <Loader2 className="animate-spin" /> : 'Salvar Cliente'}
     </Button>
   );
 }
 
-export function AddFuncionarioForm() {
+export function AddClienteForm() {
   const { toast } = useToast();
   const router = useRouter();
 
@@ -44,25 +47,26 @@ export function AddFuncionarioForm() {
       firstName: '',
       lastName: '',
       email: '',
-      role: '',
+      phoneNumber: '',
+      address: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-        console.log("Saving new employee (mock):", values);
+     try {
+        console.log("Saving new customer (mock):", values);
         toast({
             title: 'Sucesso!',
-            description: 'Novo funcionário adicionado.',
+            description: 'Novo cliente adicionado.',
         });
-        router.push('/funcionarios');
+        router.push('/clientes');
     } catch(error) {
          toast({
             variant: 'destructive',
             title: 'Erro',
-            description: 'Não foi possível adicionar o funcionário.',
+            description: 'Não foi possível adicionar o cliente.',
         });
-        console.error("Error adding employee:", error);
+        console.error("Error adding customer:", error);
     }
   }
 
@@ -77,7 +81,7 @@ export function AddFuncionarioForm() {
               <FormItem>
                 <FormLabel>Nome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Carlos" {...field} />
+                  <Input placeholder="Ex: Ana" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -90,7 +94,7 @@ export function AddFuncionarioForm() {
               <FormItem>
                 <FormLabel>Sobrenome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Silva" {...field} />
+                  <Input placeholder="Ex: Lima" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -103,20 +107,33 @@ export function AddFuncionarioForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Ex: carlos.silva@email.com" {...field} />
+                  <Input type="email" placeholder="Ex: ana.lima@email.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
+           <FormField
             control={form.control}
-            name="role"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cargo</FormLabel>
+                <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Vendedor" {...field} />
+                  <Input placeholder="(00) 00000-0000" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço</FormLabel>
+                <FormControl>
+                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

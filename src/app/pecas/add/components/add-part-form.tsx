@@ -30,8 +30,6 @@ import {
 import { useState } from 'react';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
-import { addDocumentNonBlocking, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
 
 const formSchema = z.object({
   partName: z.string().min(2, { message: 'O nome da peça deve ter pelo menos 2 caracteres.' }),
@@ -60,7 +58,6 @@ function SubmitButton() {
 
 export function AddPartForm() {
   const { toast } = useToast();
-  const firestore = useFirestore();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
 
@@ -82,12 +79,7 @@ export function AddPartForm() {
   });
   
   async function createPartAction(values: PartFormData) {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: "Erro", description: "O Firestore não está disponível." });
-      return;
-    }
     try {
-      const partsCollection = collection(firestore, 'parts');
       const partData = {
         name: values.partName,
         sku: `SKU-${Date.now()}`,
@@ -101,10 +93,8 @@ export function AddPartForm() {
         condition: values.condition,
         technicalSpecifications: values.technicalSpecifications,
         description: values.description,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
-      await addDocumentNonBlocking(partsCollection, partData);
+      console.log('Saving part (mock):', partData);
       toast({ title: "Sucesso!", description: "Nova peça adicionada ao catálogo." });
       form.reset();
     } catch (error) {
