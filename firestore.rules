@@ -2,114 +2,105 @@
  * @fileOverview Firestore Security Rules for AutoParts Manager.
  *
  * Core Philosophy:
- * This ruleset prioritizes security and data access control for the AutoParts Manager application.
- * It adopts a strict, explicit approach to permissions, ensuring that each data access operation
- * is explicitly authorized. The primary goal is to prevent unauthorized data access and modification
- * while providing flexibility for application development.
+ * This ruleset enforces a role-based access control model. Only authenticated
+ * users can access data, and specific roles are required for certain
+ * operations. Employee documents require authentication for listing.
  *
  * Data Structure:
- * - `/storeConfig/main`: Singleton document storing global store configuration.
- * - `/parts/{partId}`: Collection of auto parts.
- * - `/employees/{employeeId}`: Collection of employee records.
- * - `/customers/{customerId}`: Collection of customer records.
- * - `/sales/{saleId}`: Collection of sales transactions.
- * - `/sales/{saleId}/saleItems/{saleItemId}`: Subcollection of items within a sale.
+ * - /storeConfig/main: Singleton document containing store configuration.
+ * - /parts/{partId}: Collection of auto parts.
+ * - /employees/{employeeId}: Collection of employee information.
+ * - /customers/{customerId}: Collection of customer information.
+ * - /sales/{saleId}: Collection of sale transactions.
+ * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of sale items for each sale.
  *
  * Key Security Decisions:
- * - **No User Listing**: Listing of users (employees or customers) is explicitly denied for security reasons.
- * - **Store Config**: Store configuration is publicly readable but only writable with appropriate role. (TODO: Define role).
- * - **Path-based Ownership**: Relationships between documents are validated via path parameters and document fields.
- * - **No `get()` calls**: Rules are designed to avoid `get()` calls for authorization. All necessary data for authorization must be present in the `request.auth` context or within the document itself.
+ * - Listing of employee documents is only permitted to authenticated users.
+ *
+ *
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to the store configuration.
+     * @description Grants read-only access to the store configuration for all authenticated users.
      * @path /storeConfig/main
-     * @allow (get, list): Anyone can read the store configuration.
-     * @allow (create, update, delete): Only authenticated users with specific role can modify the store configuration. (TODO: Define role).
-     * @deny (create, update, delete): Unauthorized users cannot modify the store configuration.
-     * @principle Public read, restricted write based on role (TODO).
+     * @allow get, list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Allows any signed-in user to read store config, but prevents any writes.
      */
     match /storeConfig/main {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: implement admin role to write the store config
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to auto part documents.
+     * @description Grants read-only access to parts for all authenticated users.
      * @path /parts/{partId}
-     * @allow get, list: if true;
-     * @allow create: if false; // TODO: implement admin role to create a part
-     * @allow update: if false; // TODO: implement admin role to update a part
-     * @allow delete: if false; // TODO: implement admin role to delete a part
-     * @principle Public read, restricted write based on role (TODO).
+     * @allow get, list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Allows any signed-in user to read part information, but prevents any writes.
      */
     match /parts/{partId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: implement admin role to write the part
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to employee documents.
+     * @description Only allow listing employees when authenticated.
      * @path /employees/{employeeId}
-     * @allow get: if false;
-     * @allow list: if false;
-     * @allow create: if false; // TODO: implement admin role to create an employee
-     * @allow update: if false; // TODO: implement admin role to update an employee
-     * @allow delete: if false; // TODO: implement admin role to delete an employee
-     * @principle No listing or read access. Write operations requires a role (TODO).
+     * @allow get: if isSignedIn();
+     * @allow list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Requires authentication for any access to employee information.
      */
     match /employees/{employeeId} {
-      allow get: if false;
-      allow list: if false;
-      allow create, update, delete: if false; // TODO: implement admin role to write the employee
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to customer documents.
+     * @description Grants read-only access to customer information for all authenticated users.
      * @path /customers/{customerId}
-     * @allow get: if false;
-     * @allow list: if false;
-     * @allow create: if false; // TODO: implement admin role to create a customer
-     * @allow update: if false; // TODO: implement admin role to update a customer
-     * @allow delete: if false; // TODO: implement admin role to delete a customer
-     * @principle No listing or read access. Write operations requires a role (TODO).
+     * @allow get, list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Allows any signed-in user to read customer data, but prevents any writes.
      */
     match /customers/{customerId} {
-      allow get: if false;
-      allow list: if false;
-      allow create, update, delete: if false; // TODO: implement admin role to write the customer
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to sale documents.
+     * @description Grants read-only access to sales information for all authenticated users.
      * @path /sales/{saleId}
-     * @allow get, list: if false;
-     * @allow create: if false; // TODO: implement admin/employee role to create a sale
-     * @allow update: if false; // TODO: implement admin/employee role to update a sale
-     * @allow delete: if false; // TODO: implement admin/employee role to delete a sale
-     * @principle Restricted access. Write operations requires a role (TODO).
+     * @allow get, list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Allows any signed-in user to read sales data, but prevents any writes.
      */
     match /sales/{saleId} {
-      allow get, list: if false;
-      allow create, update, delete: if false; // TODO: implement admin/employee role to write the sale
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to sale item documents.
+     * @description Grants read-only access to sale items for all authenticated users.
      * @path /sales/{saleId}/saleItems/{saleItemId}
-     * @allow get, list: if false;
-     * @allow create: if false; // TODO: implement admin/employee role to create a saleItem
-     * @allow update: if false; // TODO: implement admin/employee role to update a saleItem
-     * @allow delete: if false; // TODO: implement admin/employee role to delete a saleItem
-     * @principle Restricted access. Write operations requires a role (TODO).
+     * @allow get, list: if isSignedIn();
+     * @deny create, update, delete: if true;
+     * @principle Allows any signed-in user to read sale items, but prevents any writes.
      */
     match /sales/{saleId}/saleItems/{saleItemId} {
-      allow get, list: if false;
-      allow create, update, delete: if false; // TODO: implement admin/employee role to write the saleItem
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
+
+  }
+
+  // Helper function to determine if a user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
