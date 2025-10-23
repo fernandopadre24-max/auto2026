@@ -57,43 +57,6 @@ export default function VendasPage() {
     useState<Employee | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!authenticatedEmployee) return;
-      if (e.key === 'F9') {
-        e.preventDefault();
-        setIsCustomerDialogOpen(true);
-      }
-      if (e.key === 'F10') {
-        e.preventDefault();
-        setIsInstallmentsDialogOpen(true);
-      }
-       if (e.key === 'F11') {
-        e.preventDefault();
-        restoreLastSale();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    // Check for logged-in employee in session storage
-    const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
-    if (storedEmployee) {
-      const employee: Employee = JSON.parse(storedEmployee);
-      setAuthenticatedEmployee(employee);
-      setLastAction(`Operador: ${employee.name}. Caixa livre.`);
-    }
-    setIsAuthenticating(false);
-
-
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [authenticatedEmployee]);
-
   const filteredParts = useMemo(() => {
     if (searchTerm) {
       return allPartsData.filter(
@@ -133,6 +96,28 @@ export default function VendasPage() {
     document.getElementById('item-search')?.focus();
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('authenticatedEmployee');
+    setAuthenticatedEmployee(null);
+    router.push('/');
+  }
+
+  const restoreLastSale = () => {
+    if (lastSaleItems.length === 0) {
+      toast({
+        title: 'Nenhuma Venda Recente',
+        description: 'Não há uma última venda para restaurar.',
+      });
+      return;
+    }
+    setCartItems([...lastSaleItems]);
+    setLastAction('Última venda restaurada.');
+    toast({
+      title: 'Última Venda Restaurada',
+      description: 'Os itens da última venda foram adicionados ao carrinho.',
+    });
+  };
+
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && selectedItem) {
       handleAddItemToCart(selectedItem);
@@ -141,6 +126,43 @@ export default function VendasPage() {
       handleLogout();
     }
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!authenticatedEmployee) return;
+      if (e.key === 'F9') {
+        e.preventDefault();
+        setIsCustomerDialogOpen(true);
+      }
+      if (e.key === 'F10') {
+        e.preventDefault();
+        setIsInstallmentsDialogOpen(true);
+      }
+       if (e.key === 'F11') {
+        e.preventDefault();
+        restoreLastSale();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Check for logged-in employee in session storage
+    const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
+    if (storedEmployee) {
+      const employee: Employee = JSON.parse(storedEmployee);
+      setAuthenticatedEmployee(employee);
+      setLastAction(`Operador: ${employee.name}. Caixa livre.`);
+    }
+    setIsAuthenticating(false);
+
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [authenticatedEmployee]);
 
   const subtotal = useMemo(() => {
     return cartItems.reduce(
@@ -215,22 +237,6 @@ export default function VendasPage() {
     });
   };
 
-  const restoreLastSale = () => {
-    if (lastSaleItems.length === 0) {
-      toast({
-        title: 'Nenhuma Venda Recente',
-        description: 'Não há uma última venda para restaurar.',
-      });
-      return;
-    }
-    setCartItems([...lastSaleItems]);
-    setLastAction('Última venda restaurada.');
-    toast({
-      title: 'Última Venda Restaurada',
-      description: 'Os itens da última venda foram adicionados ao carrinho.',
-    });
-  };
-
   const showInfoToast = (title: string, description: string) => {
     toast({
       title: title,
@@ -247,12 +253,6 @@ export default function VendasPage() {
       description: 'Login efetuado com sucesso.',
     });
   };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('authenticatedEmployee');
-    setAuthenticatedEmployee(null);
-    router.push('/');
-  }
 
   if (isAuthenticating) {
     return null; // or a loading spinner
