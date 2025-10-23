@@ -9,17 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { Employee } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
 import {
   ColumnDef,
   flexRender,
@@ -37,12 +29,6 @@ type FuncionariosTableProps = {
   data: Employee[];
 };
 
-const formatDate = (dateString: string) => {
-    // Adiciona o T00:00:00 para garantir que a data seja interpretada no fuso horário local e não em UTC.
-    const date = new Date(`${dateString}T00:00:00`);
-    return date.toLocaleDateString('pt-BR');
-}
-
 export const columns: ColumnDef<Employee>[] = [
   {
     accessorKey: 'firstName',
@@ -59,29 +45,20 @@ export const columns: ColumnDef<Employee>[] = [
   },
   {
     id: 'actions',
+    header: () => <div className="text-center">Ações</div>,
     cell: ({ row }) => {
       const employee = row.original;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(employee.id)}
-            >
-              Copiar ID do Funcionário
-            </DropdownMenuItem>
-            <DropdownMenuItem>Editar Funcionário</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500 focus:bg-red-50 focus:text-red-600">
-              Demitir Funcionário
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Editar</span>
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600">
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Demitir</span>
+          </Button>
+        </div>
       );
     },
   },

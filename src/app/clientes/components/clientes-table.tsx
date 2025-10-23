@@ -9,15 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import {
   ColumnDef,
@@ -52,29 +45,20 @@ export const columns: ColumnDef<Customer>[] = [
   },
   {
     id: 'actions',
+    header: () => <div className="text-center">Ações</div>,
     cell: ({ row }) => {
       const customer = row.original;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(customer.id)}
-            >
-              Copiar ID do Cliente
-            </DropdownMenuItem>
-            <DropdownMenuItem>Editar Cliente</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500 focus:bg-red-50 focus:text-red-600">
-              Excluir Cliente
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Editar</span>
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600">
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Excluir</span>
+          </Button>
+        </div>
       );
     },
   },
