@@ -29,6 +29,11 @@ export default function VendasPage() {
     const [selectedItem, setSelectedItem] = useState<Part | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [lastAction, setLastAction] = useState('Caixa Livre');
+    const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setCurrentDateTime(new Date());
+    }, []);
 
     useEffect(() => {
         if (searchTerm) {
@@ -163,7 +168,7 @@ export default function VendasPage() {
             <p>CNPJ: 11.222.333/0001-44</p>
             <p>IE: 11.777.888</p>
             <p className="border-b border-dashed border-gray-400 pb-1">
-              {new Date().toLocaleString('pt-BR')}
+              {currentDateTime ? currentDateTime.toLocaleString('pt-BR') : '...'}
             </p>
             <p className="py-1 text-center">---- CUPOM NÃO FISCAL ----</p>
             <div className="border-b border-dashed border-gray-400 pb-1">
@@ -253,8 +258,8 @@ export default function VendasPage() {
            </div>
            <div className="space-y-2">
             <InfoBox label="OPERADOR" value="LUIZ" smallText center />
-            <InfoBox label="DATA DA VENDA" value={new Date().toLocaleDateString('pt-BR')} smallText center />
-            <InfoBox label="HORA ATUAL" value={new Date().toLocaleTimeString('pt-BR')} smallText center />
+            <InfoBox label="DATA DA VENDA" value={currentDateTime ? currentDateTime.toLocaleDateString('pt-BR') : '...'} smallText center />
+            <InfoBox label="HORA ATUAL" value={currentDateTime ? currentDateTime.toLocaleTimeString('pt-BR') : '...'} smallText center />
            </div>
         </div>
       </div>
@@ -278,5 +283,3 @@ function ActionButton({ children, onClick }: { children: React.ReactNode, onClic
         </Button>
     )
 }
-
-    
