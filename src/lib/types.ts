@@ -25,20 +25,24 @@ export type RecentSale = {
 
 export type Customer = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  totalSpent: number;
-  lastPurchase: string;
+  phoneNumber: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Employee = {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    position: string;
-    admissionDate: string;
-    status: 'Ativo' | 'Inativo';
+    phoneNumber: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type SaleItem = {

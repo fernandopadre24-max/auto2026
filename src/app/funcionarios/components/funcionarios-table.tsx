@@ -45,31 +45,17 @@ const formatDate = (dateString: string) => {
 
 export const columns: ColumnDef<Employee>[] = [
   {
-    accessorKey: 'name',
+    accessorKey: 'firstName',
     header: 'Nome',
+    cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
   },
   {
     accessorKey: 'email',
     header: 'Email',
   },
   {
-    accessorKey: 'position',
+    accessorKey: 'role',
     header: 'Cargo',
-  },
-  {
-    accessorKey: 'admissionDate',
-    header: 'Data de Admissão',
-    cell: ({ row }) => formatDate(row.getValue('admissionDate')),
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string;
-      const variant = status === 'Ativo' ? 'default' : 'destructive';
-      const className = status === 'Ativo' ? 'bg-green-600' : '';
-      return <Badge variant={variant} className={className}>{status}</Badge>;
-    }
   },
   {
     id: 'actions',
@@ -125,9 +111,9 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
       <div className="flex items-center">
         <Input
           placeholder="Filtrar por nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
+            table.getColumn('firstName')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

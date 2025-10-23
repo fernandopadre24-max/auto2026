@@ -36,44 +36,19 @@ type ClientesTableProps = {
   data: Customer[];
 };
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(amount);
-};
-
-const formatDate = (dateString: string) => {
-    // Adiciona o T00:00:00 para garantir que a data seja interpretada no fuso horário local e não em UTC.
-    const date = new Date(`${dateString}T00:00:00`);
-    return date.toLocaleDateString('pt-BR');
-}
-
 export const columns: ColumnDef<Customer>[] = [
   {
-    accessorKey: 'name',
+    accessorKey: 'firstName',
     header: 'Nome',
+    cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
   },
   {
     accessorKey: 'email',
     header: 'Email',
   },
   {
-    accessorKey: 'phone',
+    accessorKey: 'phoneNumber',
     header: 'Telefone',
-  },
-  {
-    accessorKey: 'totalSpent',
-    header: () => <div className="text-right">Total Gasto</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('totalSpent'));
-      return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
-    },
-  },
-  {
-    accessorKey: 'lastPurchase',
-    header: 'Última Compra',
-    cell: ({ row }) => formatDate(row.getValue('lastPurchase')),
   },
   {
     id: 'actions',
@@ -129,9 +104,9 @@ export function ClientesTable({ data }: ClientesTableProps) {
       <div className="flex items-center">
         <Input
           placeholder="Filtrar por nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
+            table.getColumn('firstName')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
