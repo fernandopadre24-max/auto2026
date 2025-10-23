@@ -1,93 +1,94 @@
 /**
- * @fileOverview Firestore Security Rules for AutoParts Manager.
- *
- * Core Philosophy:
- * This ruleset prioritizes security through explicit authorization checks, focusing on protecting data based on user roles.
- * It avoids complex data validation in favor of rapid prototyping.
- *
- * Data Structure:
- * - /storeConfig/main: Singleton document for store configuration.
- * - /parts/{partId}: Collection of auto parts.
- * - /employees/{employeeId}: Collection of employee data.
- * - /customers/{customerId}: Collection of customer data.
- * - /sales/{saleId}: Collection of sales transactions.
- * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of items within a sale.
- *
- * Key Security Decisions:
- * - No public listing of employees, customers, or sales.
- * - Authorization Independence: Rules avoid get() calls by relying on request.auth and pre-existing data on the document.
+ * @description This ruleset enforces a strict owner-only access model for most collections,
+ *              with public read access to the 'storeConfig' collection.
+ * @dataStructure
+ *  - /storeConfig/main: Singleton document containing store configuration. Publicly readable.
+ *  - /parts/{partId}: Collection of auto parts. Write-protected.
+ *  - /employees/{employeeId}: Collection of employee records. Write-protected.
+ *  - /customers/{customerId}: Collection of customer records. Write-protected.
+ *  - /sales/{saleId}: Collection of sales transactions. Write-protected.
+ *  - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of sale items for each sale. Write-protected.
+ * @keySecurityDecisions
+ *  - No user listing is allowed for employees, customers, or parts collections.
+ *  - All write operations are protected by authorization checks.
+ *  - Read access to /storeConfig/main is public.
+ * @denormalizationForAuthorization Not applicable in this ruleset.
+ * @structuralSegregation Data is segregated by entity type into separate collections.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants read-only access to the store configuration.
+     * @description Allows anyone to read the store configuration, but no one can write to it.
      * @path /storeConfig/main
-     * @allow get, list: if true
-     * @deny create, update, delete: if false
-     * @principle Public read-only access for store configuration.
+     * @allow (get, list) Authenticated and unauthenticated users can read store config.
+     * @deny (create, update, delete) No one can create, update, or delete the store config.
+     * @principle Public read access with no write access.
      */
-    match /storeConfig/main {
+    match /storeConfig/{document} {
       allow get, list: if true;
       allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages access to auto parts.
+     * @description Denies all access to the parts collection.
      * @path /parts/{partId}
-     * @allow get, list: if true
-     * @allow create: if isSignedIn()
-     * @allow update: if isSignedIn() && resource != null
-     * @allow delete: if isSignedIn() && resource != null
-     * @deny create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Public read, owner-only writes for parts.
+     * @allow None.
+     * @deny (create, get, list, update, delete) All operations are denied.
+     * @principle Data is not intended to be directly accessed through the client.
      */
     match /parts/{partId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read: if false;
+      allow write: if false;
     }
 
     /**
-     * @description Manages access to employee data.
+     * @description Denies all access to the employees collection.
      * @path /employees/{employeeId}
-     * @deny get, list, create, update, delete: if true
-     * @principle No access to employee data.
+     * @allow None.
+     * @deny (create, get, list, update, delete) All operations are denied.
+     * @principle Data is not intended to be directly accessed through the client.
      */
     match /employees/{employeeId} {
-      allow get, list, create, update, delete: if false;
+      allow read: if false;
+      allow write: if false;
     }
 
     /**
-     * @description Manages access to customer data.
+     * @description Denies all access to the customers collection.
      * @path /customers/{customerId}
-     * @deny get, list, create, update, delete: if true
-     * @principle No access to customer data.
+     * @allow None.
+     * @deny (create, get, list, update, delete) All operations are denied.
+     * @principle Data is not intended to be directly accessed through the client.
      */
     match /customers/{customerId} {
-      allow get, list, create, update, delete: if false;
+      allow read: if false;
+      allow write: if false;
     }
 
     /**
-     * @description Manages access to sales transactions.
+     * @description Denies all access to the sales collection.
      * @path /sales/{saleId}
-     * @deny get, list, create, update, delete: if true
-     * @principle No access to sales data.
+     * @allow None.
+     * @deny (create, get, list, update, delete) All operations are denied.
+     * @principle Data is not intended to be directly accessed through the client.
      */
     match /sales/{saleId} {
-      allow get, list, create, update, delete: if false;
+      allow read: if false;
+      allow write: if false;
     }
 
     /**
-     * @description Manages access to sale items within a sale.
+     * @description Denies all access to the saleItems subcollection.
      * @path /sales/{saleId}/saleItems/{saleItemId}
-     * @deny get, list, create, update, delete: if true
-     * @principle No access to sale items.
+     * @allow None.
+     * @deny (create, get, list, update, delete) All operations are denied.
+     * @principle Data is not intended to be directly accessed through the client.
      */
     match /sales/{saleId}/saleItems/{saleItemId} {
-      allow get, list, create, update, delete: if false;
+      allow read: if false;
+      allow write: if false;
     }
 
     function isSignedIn() {
