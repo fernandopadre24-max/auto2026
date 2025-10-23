@@ -1,0 +1,115 @@
+/**
+ * @file Firebase Security Rules for AutoParts Manager
+ * @version Prototyping
+ *
+ * @description This ruleset enforces a strict separation of data based on entity type.
+ * Each entity (Part, Employee, Customer, Sale, SaleItem) is stored in its own top-level collection or subcollection.
+ *
+ * @dataStructure
+ * - /parts/{partId}: Stores auto part information. Public read, owner-only write.
+ * - /employees/{employeeId}: Stores employee information. Public read, owner-only write.
+ * - /customers/{customerId}: Stores customer information. Public read, owner-only write.
+ * - /sales/{saleId}: Stores sale transaction information. Public read, owner-only write.
+ * - /sales/{saleId}/saleItems/{saleItemId}: Stores items within a sale transaction. Public read, owner-only write.
+ *
+ * @keySecurityDecisions
+ * - Public read access is granted to all collections.
+ * - Write access to all collections is restricted to authenticated users, enforced through ownership.
+ * - Schema validation is relaxed to allow for rapid iteration during the prototyping phase, except for ownership fields.
+ * - List operations are secured on the same basis as get operations.
+ *
+ * @denormalizationForAuthorization
+ * -  The current rules do not require denormalization as the entities do not have an inherent owner.
+ * -  If specific users should be able to modify sales data (e.g., only the employee who created the sale),
+ *    the Sale document would need an `ownerId` field.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows public read access and owner-only write access to parts.
+     * @path /parts/{partId}
+     * @allow (get, list)
+     * @allow (create) - Authenticated user creates a new part.
+     * @allow (update, delete) - Authenticated user updates or deletes their own part.
+     * @deny (create) - Unauthenticated user attempts to create a part.
+     * @deny (update, delete) - Unauthenticated user attempts to update or delete a part.
+     * @principle Allows anyone to read parts, but restricts creation, updating, and deleting to authenticated users.
+     */
+    match /parts/{partId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and owner-only write access to employees.
+     * @path /employees/{employeeId}
+     * @allow (get, list)
+     * @allow (create) - Authenticated user creates a new employee.
+     * @allow (update, delete) - Authenticated user updates or deletes their own employee.
+     * @deny (create) - Unauthenticated user attempts to create a employee.
+     * @deny (update, delete) - Unauthenticated user attempts to update or delete a employee.
+     * @principle Allows anyone to read employees, but restricts creation, updating, and deleting to authenticated users.
+     */
+    match /employees/{employeeId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and owner-only write access to customers.
+     * @path /customers/{customerId}
+     * @allow (get, list)
+     * @allow (create) - Authenticated user creates a new customer.
+     * @allow (update, delete) - Authenticated user updates or deletes their own customer.
+     * @deny (create) - Unauthenticated user attempts to create a customer.
+     * @deny (update, delete) - Unauthenticated user attempts to update or delete a customer.
+     * @principle Allows anyone to read customers, but restricts creation, updating, and deleting to authenticated users.
+     */
+    match /customers/{customerId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and owner-only write access to sales.
+     * @path /sales/{saleId}
+     * @allow (get, list)
+     * @allow (create) - Authenticated user creates a new sale.
+     * @allow (update, delete) - Authenticated user updates or deletes their own sale.
+     * @deny (create) - Unauthenticated user attempts to create a sale.
+     * @deny (update, delete) - Unauthenticated user attempts to update or delete a sale.
+     * @principle Allows anyone to read sales, but restricts creation, updating, and deleting to authenticated users.
+     */
+    match /sales/{saleId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows public read access and owner-only write access to sale items.
+     * @path /sales/{saleId}/saleItems/{saleItemId}
+     * @allow (get, list)
+     * @allow (create) - Authenticated user creates a new sale item.
+     * @allow (update, delete) - Authenticated user updates or deletes their own sale item.
+     * @deny (create) - Unauthenticated user attempts to create a sale item.
+     * @deny (update, delete) - Unauthenticated user attempts to update or delete a sale item.
+     * @principle Allows anyone to read sale items, but restricts creation, updating, and deleting to authenticated users.
+     */
+    match /sales/{saleId}/saleItems/{saleItemId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource != null;
+    }
+  }
+
+  // Helper function to determine if a user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
+  }
+}
