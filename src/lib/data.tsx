@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import type { Part, Customer, Employee, Sale } from './types';
+import type { Part, Customer, Employee, Sale, StoreConfig } from './types';
 
 // Static Mock Data
 const mockParts: Part[] = [
@@ -24,19 +24,33 @@ const mockSales: Sale[] = [
     { id: '2', employeeId: '1', customerId: '2', items: [{ partId: '2', quantity: 1, unitPrice: 95.00, discount: 10 }], total: 85.00, paymentMethod: 'PIX', installments: 1, date: new Date().toISOString() },
 ];
 
+const mockConfig: StoreConfig = {
+  storeName: 'AutoParts Manager',
+  cnpj: '12.345.678/0001-99',
+  address: 'Rua Principal, 123, Centro',
+  phone: '(11) 98765-4321'
+};
+
 
 interface DataContextProps {
   parts: Part[];
   customers: Customer[];
   employees: Employee[];
   sales: Sale[];
+  config: StoreConfig;
   isLoading: boolean;
+  saveConfig: (newConfig: StoreConfig) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [parts, setParts] = useState(mockParts);
+  const [customers, setCustomers] = useState(mockCustomers);
+  const [employees, setEmployees] = useState(mockEmployees);
+  const [sales, setSales] = useState(mockSales);
+  const [config, setConfig] = useState(mockConfig);
 
   // Simulate data fetching
   useEffect(() => {
@@ -45,13 +59,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }, 500); // Simulate a short loading delay
     return () => clearTimeout(timer);
   }, []);
+
+  const saveConfig = (newConfig: StoreConfig) => {
+    setConfig(newConfig);
+    // In a real app, you would also save this to a persistent storage
+    // like localStorage or a database.
+  };
   
   const value = {
-    parts: mockParts,
-    customers: mockCustomers,
-    employees: mockEmployees,
-    sales: mockSales,
+    parts,
+    customers,
+    employees,
+    sales,
+    config,
     isLoading,
+    saveConfig,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

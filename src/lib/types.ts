@@ -62,3 +62,10 @@ export type Sale = {
     installments: number;
     date: string;
 };
+
+export type StoreConfig = {
+  storeName: string;
+  cnpj?: string;
+  address?: string;
+  phone?: string;
+};

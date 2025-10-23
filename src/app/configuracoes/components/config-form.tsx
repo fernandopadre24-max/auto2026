@@ -18,6 +18,8 @@ import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useData } from '@/lib/data';
+import type { StoreConfig } from '@/lib/types';
 
 const formSchema = z.object({
   storeName: z.string().min(2, { message: 'O nome da loja é obrigatório.' }),
@@ -25,8 +27,6 @@ const formSchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
 });
-
-type StoreConfig = z.infer<typeof formSchema>;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -39,15 +39,7 @@ function SubmitButton() {
 
 export function ConfigForm() {
   const { toast } = useToast();
-  
-  // Mocked data, as Firebase is removed
-  const configData: StoreConfig = {
-    storeName: 'AutoParts Manager',
-    cnpj: '12.345.678/0001-99',
-    address: 'Rua Principal, 123, Centro',
-    phone: '(11) 98765-4321'
-  };
-  const isLoading = false;
+  const { config: configData, isLoading, saveConfig } = useData();
 
   const form = useForm<StoreConfig>({
     resolver: zodResolver(formSchema),
@@ -67,7 +59,7 @@ export function ConfigForm() {
 
   async function onSubmit(values: StoreConfig) {
     try {
-      console.log('Saving config (mock):', values);
+      saveConfig(values);
       toast({
         title: 'Sucesso!',
         description: 'As configurações da loja foram atualizadas.',
@@ -134,7 +126,7 @@ export function ConfigForm() {
               <FormItem>
                 <FormLabel>CNPJ</FormLabel>
                 <FormControl>
-                  <Input placeholder="00.000.000/0001-00" {...field} />
+                  <Input placeholder="00.000.000/0001-00" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -147,7 +139,7 @@ export function ConfigForm() {
               <FormItem>
                 <FormLabel>Endereço</FormLabel>
                 <FormControl>
-                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
+                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -160,7 +152,7 @@ export function ConfigForm() {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
