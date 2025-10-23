@@ -1,4 +1,4 @@
-import type { Part, RecentSale, Customer } from '@/lib/types';
+import type { Part, RecentSale, Customer, Employee } from '@/lib/types';
 
 export const parts: Part[] = [
   {
@@ -149,3 +149,46 @@ export const customers: Customer[] = [
     lastPurchase: '2023-08-12',
   },
 ];
+
+export const employees: Employee[] = [
+    {
+        id: '1',
+        name: 'Roberto Almeida',
+        email: 'roberto.a@autoparts.com',
+        position: 'Gerente',
+        admissionDate: '2020-01-15',
+        status: 'Ativo'
+    },
+    {
+        id: '2',
+        name: 'Fernanda Lima',
+        email: 'fernanda.l@autoparts.com',
+        position: 'Vendedora',
+        admissionDate: '2021-03-20',
+        status: 'Ativo'
+    },
+    {
+        id: '3',
+        name: 'Lucas Souza',
+        email: 'lucas.s@autoparts.com',
+        position: 'Mecânico',
+        admissionDate: '2022-07-10',
+        status: 'Ativo'
+    },
+    {
+        id: '4',
+        name: 'Juliana Santos',
+        email: 'juliana.s@autoparts.com',
+        position: 'Caixa',
+        admissionDate: '2023-02-28',
+        status: 'Ativo'
+    },
+    {
+        id: '5',
+        name: 'Ricardo Gomes',
+        email: 'ricardo.g@autoparts.com',
+        position: 'Estoquista',
+        admissionDate: '2021-11-01',
+        status: 'Inativo'
+    }
+]

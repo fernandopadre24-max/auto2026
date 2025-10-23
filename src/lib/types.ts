@@ -28,3 +28,12 @@ export type Customer = {
   totalSpent: number;
   lastPurchase: string;
 };
+
+export type Employee = {
+    id: string;
+    name: string;
+    email: string;
+    position: string;
+    admissionDate: string;
+    status: 'Ativo' | 'Inativo';
+}
