@@ -26,6 +26,7 @@ export default function VendasPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Part[]>([]);
     const [selectedItem, setSelectedItem] = useState<Part | null>(null);
@@ -108,6 +109,9 @@ export default function VendasPage() {
             });
             return;
         }
+
+        setLastSaleItems([...cartItems]);
+
         toast({
             title: 'Venda Finalizada!',
             description: `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`
@@ -128,6 +132,23 @@ export default function VendasPage() {
             title: 'Venda Cancelada',
         });
     }
+    
+    const restoreLastSale = () => {
+      if (lastSaleItems.length === 0) {
+        toast({
+          title: 'Nenhuma Venda Recente',
+          description: 'Não há uma última venda para restaurar.',
+        });
+        return;
+      }
+      setCartItems([...lastSaleItems]);
+      setLastAction('Última venda restaurada.');
+      toast({
+        title: 'Última Venda Restaurada',
+        description: 'Os itens da última venda foram adicionados ao carrinho.',
+      });
+    }
+
 
     const showInfoToast = (title: string, description: string) => {
       toast({
@@ -226,7 +247,7 @@ export default function VendasPage() {
             <div className="flex gap-4">
                 <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Clientes (F9)', 'Função não implementada.')}>CLIENTES - F9</Button>
                 <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Parcelas (F10)', 'Função não implementada.')}>PARCELAS - F10</Button>
-                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Última Venda (F11)', 'Função não implementada.')}>ULT. VENDA - F11</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={restoreLastSale}>ULT. VENDA - F11</Button>
             </div>
           </div>
            <div className="flex justify-between bg-blue-700 p-2 text-white">
@@ -300,3 +321,5 @@ function ActionButton({ children, onClick }: { children: React.ReactNode, onClic
         </Button>
     )
 }
+
+    
