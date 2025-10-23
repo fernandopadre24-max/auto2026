@@ -26,11 +26,12 @@ import { useToast } from '@/hooks/use-toast';
 import {
   generateDescriptionAction,
   suggestPriceAction,
-  createPartAction,
 } from '@/app/pecas/actions';
 import { useState } from 'react';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+import { addDocumentNonBlocking, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const formSchema = z.object({
   partName: z.string().min(2, { message: 'O nome da peça deve ter pelo menos 2 caracteres.' }),
@@ -46,6 +47,8 @@ const formSchema = z.object({
   description: z.string().optional(),
 });
 
+type PartFormData = z.infer<typeof formSchema>;
+
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
@@ -56,10 +59,12 @@ function SubmitButton() {
 }
 
 export function AddPartForm() {
+  const { toast } = useToast();
+  const firestore = useFirestore();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<PartFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       partName: '',
@@ -75,6 +80,39 @@ export function AddPartForm() {
       description: '',
     },
   });
+  
+  async function createPartAction(values: PartFormData) {
+    if (!firestore) {
+      toast({ variant: 'destructive', title: "Erro", description: "O Firestore não está disponível." });
+      return;
+    }
+    try {
+      const partsCollection = collection(firestore, 'parts');
+      const partData = {
+        name: values.partName,
+        sku: `SKU-${Date.now()}`,
+        stock: Number(values.inventoryLevel),
+        purchasePrice: Number(values.purchasePrice),
+        salePrice: Number(values.salePrice),
+        category: values.partCategory,
+        manufacturer: values.manufacturer,
+        vehicleModel: values.model,
+        vehicleYear: Number(values.year),
+        condition: values.condition,
+        technicalSpecifications: values.technicalSpecifications,
+        description: values.description,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await addDocumentNonBlocking(partsCollection, partData);
+      toast({ title: "Sucesso!", description: "Nova peça adicionada ao catálogo." });
+      form.reset();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
+      toast({ variant: 'destructive', title: "Erro", description: `Erro ao criar peça: ${errorMessage}` });
+      console.error('Error creating part:', error);
+    }
+  }
 
   async function handleGenerateDescription() {
     setIsGeneratingDescription(true);
@@ -138,15 +176,7 @@ export function AddPartForm() {
 
   return (
     <Form {...form}>
-      <form action={async (formData) => {
-          const result = await createPartAction(formData);
-          if (result.success) {
-            toast({ title: "Sucesso!", description: "Nova peça adicionada ao catálogo." });
-            form.reset();
-          } else {
-            toast({ variant: 'destructive', title: "Erro", description: result.message });
-          }
-      }} className="space-y-8">
+      <form onSubmit={form.handleSubmit(createPartAction)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FormField
             control={form.control}
