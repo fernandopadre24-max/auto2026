@@ -33,7 +33,8 @@ import { useFormStatus } from 'react-dom';
 
 const formSchema = z.object({
   partName: z.string().min(2, { message: 'O nome da peça deve ter pelo menos 2 caracteres.' }),
-  partCategory: z.string().min(1, { message: 'Selecione uma categoria.' }),
+  partCategory: z.string().min(1, { message: 'A categoria é obrigatória.' }),
+  unit: z.string().min(1, { message: 'A unidade é obrigatória (Ex: UN, CX, M).'}),
   manufacturer: z.string().min(2, { message: 'O fabricante deve ter pelo menos 2 caracteres.' }),
   model: z.string().min(1, { message: 'O modelo do veículo é obrigatório.' }),
   year: z.string().refine((val) => !isNaN(parseInt(val, 10)) && parseInt(val, 10) > 1900 && parseInt(val, 10) <= new Date().getFullYear() + 1, { message: 'Insira um ano válido.' }),
@@ -66,6 +67,7 @@ export function AddPartForm() {
     defaultValues: {
       partName: '',
       partCategory: '',
+      unit: 'UN',
       manufacturer: '',
       model: '',
       year: '',
@@ -87,6 +89,7 @@ export function AddPartForm() {
         purchasePrice: Number(values.purchasePrice),
         salePrice: Number(values.salePrice),
         category: values.partCategory,
+        unit: values.unit,
         manufacturer: values.manufacturer,
         vehicleModel: values.model,
         vehicleYear: Number(values.year),
@@ -187,23 +190,22 @@ export function AddPartForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a categoria" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Filtros">Filtros</SelectItem>
-                    <SelectItem value="Freios">Freios</SelectItem>
-                    <SelectItem value="Motor">Motor</SelectItem>
-                    <SelectItem value="Suspensão">Suspensão</SelectItem>
-                    <SelectItem value="Elétrica">Elétrica</SelectItem>
-                  </SelectContent>
-                </Select>
+                 <FormControl>
+                  <Input placeholder="Ex: Filtros, Freios" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Unidade</FormLabel>
+                 <FormControl>
+                  <Input placeholder="Ex: UN, CX, M, KG" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

@@ -5,8 +5,8 @@ import type { Part, Customer, Employee, Sale, StoreConfig } from './types';
 
 // Static Mock Data
 const mockParts: Part[] = [
-  { id: '1', name: 'Filtro de Óleo', sku: 'FO-001', stock: 100, purchasePrice: 15.50, salePrice: 25.00, category: 'Filtros', manufacturer: 'Bosch', vehicleModel: 'VW Gol', vehicleYear: 2020, condition: 'new', technicalSpecifications: 'Dimensões: 10x5x5cm', description: 'Filtro de óleo para VW Gol.' },
-  { id: '2', name: 'Pastilha de Freio Dianteira', sku: 'PF-002', stock: 50, purchasePrice: 50.00, salePrice: 95.00, category: 'Freios', manufacturer: 'Fras-le', vehicleModel: 'Fiat Palio', vehicleYear: 2018, condition: 'new', technicalSpecifications: 'Material: Cerâmica', description: 'Pastilha de freio para Fiat Palio.' },
+  { id: '1', name: 'Filtro de Óleo', sku: 'FO-001', stock: 100, purchasePrice: 15.50, salePrice: 25.00, category: 'Filtros', unit: 'UN', manufacturer: 'Bosch', vehicleModel: 'VW Gol', vehicleYear: 2020, condition: 'new', technicalSpecifications: 'Dimensões: 10x5x5cm', description: 'Filtro de óleo para VW Gol.' },
+  { id: '2', name: 'Pastilha de Freio Dianteira', sku: 'PF-002', stock: 50, purchasePrice: 50.00, salePrice: 95.00, category: 'Freios', unit: 'JG', manufacturer: 'Fras-le', vehicleModel: 'Fiat Palio', vehicleYear: 2018, condition: 'new', technicalSpecifications: 'Material: Cerâmica', description: 'Pastilha de freio para Fiat Palio.' },
 ];
 
 const mockCustomers: Customer[] = [

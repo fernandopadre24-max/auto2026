@@ -6,6 +6,7 @@ export type Part = {
   purchasePrice: number;
   salePrice: number;
   category: string;
+  unit: string;
   manufacturer: string;
   vehicleModel: string;
   vehicleYear: number;
