@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -81,7 +81,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
     if (!auth) {
-      // If no Auth service instance, cannot determine user state
       setUserAuthState({
         user: null,
         isUserLoading: false,
@@ -90,36 +89,25 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
+    setUserAuthState({ user: null, isUserLoading: true, userError: null });
 
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => {
-        // Auth state determined
-        if (firebaseUser) {
-          setUserAuthState({
-            user: firebaseUser,
-            isUserLoading: false,
-            userError: null,
-          });
-        } else {
-          // If no user, sign in anonymously
-          signInAnonymously(auth).catch((error) => {
-            console.error('FirebaseProvider: Anonymous sign-in error:', error);
-            setUserAuthState({ user: null, isUserLoading: false, userError: error });
-          });
-        }
+        setUserAuthState({
+          user: firebaseUser,
+          isUserLoading: false,
+          userError: null,
+        });
       },
       (error) => {
-        // Auth listener error
         console.error('FirebaseProvider: onAuthStateChanged error:', error);
         setUserAuthState({ user: null, isUserLoading: false, userError: error });
       }
     );
-    return () => unsubscribe(); // Cleanup
-  }, [auth]); // Depends on the auth instance
+    return () => unsubscribe();
+  }, [auth]);
 
-  // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
     const servicesAvailable = !!(firebaseApp && firestore && auth);
     return {
@@ -133,8 +121,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     };
   }, [firebaseApp, firestore, auth, userAuthState]);
 
-  // CRITICAL FIX: Do not render children until user is loaded and not null.
-  if (contextValue.isUserLoading || !contextValue.user) {
+  if (contextValue.isUserLoading) {
       return (
          <div className="flex h-screen w-full items-center justify-center">
             <div className="flex flex-col items-center gap-4">
@@ -223,7 +210,6 @@ export function useMemoFirebase<T>(
  * @returns {UserHookResult} Object with user, isUserLoading, userError.
  */
 export const useUser = (): UserHookResult => {
-  // Renamed from useAuthUser
-  const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
+  const { user, isUserLoading, userError } = useFirebase();
   return { user, isUserLoading, userError };
 };
