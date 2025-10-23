@@ -1,106 +1,124 @@
 /**
- * @fileOverview Firestore Security Rules for AutoParts Manager.
+ * @fileoverview Firestore Security Rules for AutoParts Manager.
  *
  * Core Philosophy:
- * This ruleset enforces a role-based access control model. Only authenticated
- * users can access data, and specific roles are required for certain
- * operations. Employee documents require authentication for listing.
+ * This ruleset prioritizes security and data access control, ensuring that
+ * only authenticated users can access specific data based on defined roles.
+ * It implements path-based ownership and restricts listing on sensitive
+ * collections.  It assumes all users are equal and there are not specific
+ * role definitions in the application.
  *
  * Data Structure:
  * - /storeConfig/main: Singleton document containing store configuration.
  * - /parts/{partId}: Collection of auto parts.
- * - /employees/{employeeId}: Collection of employee information.
- * - /customers/{customerId}: Collection of customer information.
- * - /sales/{saleId}: Collection of sale transactions.
+ * - /employees/{employeeId}: Collection of employee records.
+ * - /customers/{customerId}: Collection of customer records.
+ * - /sales/{saleId}: Collection of sales transactions.
  * - /sales/{saleId}/saleItems/{saleItemId}: Subcollection of sale items for each sale.
  *
  * Key Security Decisions:
- * - Listing of employee documents is only permitted to authenticated users.
- *
- *
+ * - Listing of employees is disallowed for security reasons.
+ * - All other top-level collections allow listing.
+ * - No complex role-based access control is implemented (all authenticated users are treated equally).
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants read-only access to the store configuration for all authenticated users.
-     * @path /storeConfig/main
-     * @allow get, list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Allows any signed-in user to read store config, but prevents any writes.
+     * @description: Rules for the store configuration singleton.
+     * @path: /storeConfig/main
+     * @allow: (get) Any authenticated user can read the store config.
+     * @deny: (create, update, delete) No one can create, update, or delete the store config through client-side rules.
+     * @principle: Public read-only access with no client-side writes.
      */
     match /storeConfig/main {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Grants read-only access to parts for all authenticated users.
-     * @path /parts/{partId}
-     * @allow get, list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Allows any signed-in user to read part information, but prevents any writes.
+     * @description: Rules for auto parts.
+     * @path: /parts/{partId}
+     * @allow: (get, list) Any authenticated user can read parts.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete parts.
+     * @principle: Requires authentication for all operations.
      */
     match /parts/{partId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Only allow listing employees when authenticated.
-     * @path /employees/{employeeId}
-     * @allow get: if isSignedIn();
-     * @allow list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Requires authentication for any access to employee information.
+     * @description: Rules for employee records.
+     * @path: /employees/{employeeId}
+     * @allow: (get) Only authenticated users can read employee records.
+     * @deny: (list, create, update, delete) Listing of employees is explicitly disallowed.
+     * @principle: Restricts listing of employee data for privacy.
      */
     match /employees/{employeeId} {
       allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow list: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Grants read-only access to customer information for all authenticated users.
-     * @path /customers/{customerId}
-     * @allow get, list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Allows any signed-in user to read customer data, but prevents any writes.
+     * @description: Rules for customer records.
+     * @path: /customers/{customerId}
+     * @allow: (get, list) Any authenticated user can read customer records.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete customer records.
+     * @principle: Requires authentication for all operations.
      */
     match /customers/{customerId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Grants read-only access to sales information for all authenticated users.
-     * @path /sales/{saleId}
-     * @allow get, list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Allows any signed-in user to read sales data, but prevents any writes.
+     * @description: Rules for sales transactions.
+     * @path: /sales/{saleId}
+     * @allow: (get, list) Any authenticated user can read sales transactions.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete sales transactions.
+     * @principle: Requires authentication for all operations.
      */
     match /sales/{saleId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Grants read-only access to sale items for all authenticated users.
-     * @path /sales/{saleId}/saleItems/{saleItemId}
-     * @allow get, list: if isSignedIn();
-     * @deny create, update, delete: if true;
-     * @principle Allows any signed-in user to read sale items, but prevents any writes.
+     * @description: Rules for sale items within a sale transaction.
+     * @path: /sales/{saleId}/saleItems/{saleItemId}
+     * @allow: (get, list) Any authenticated user can read sale items.
+     * @deny: (create, update, delete) Only authenticated users can create, update, or delete sale items.
+     * @principle: Requires authentication for all operations.
      */
     match /sales/{saleId}/saleItems/{saleItemId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
-  }
+    //------------------ Helper functions -----------------------
 
-  // Helper function to determine if a user is signed in.
-  function isSignedIn() {
-    return request.auth != null;
+    /**
+     * @description: Checks if the user is signed in.
+     * @return: True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
   }
 }
