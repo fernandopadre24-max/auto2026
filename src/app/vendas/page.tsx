@@ -39,7 +39,7 @@ export default function VendasPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Part[]>([]);
+  const [filteredParts, setFilteredParts] = useState<Part[]>([]);
   const [selectedItem, setSelectedItem] = useState<Part | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [lastAction, setLastAction] = useState('Caixa Livre');
@@ -98,9 +98,9 @@ export default function VendasPage() {
           part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           part.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setSearchResults(results);
+      setFilteredParts(results);
     } else {
-      setSearchResults([]);
+      setFilteredParts([]);
     }
   }, [searchTerm]);
 
@@ -123,14 +123,14 @@ export default function VendasPage() {
     setLastAction(`Adicionado: ${quantity}x ${part.name}`);
     setSearchTerm('');
     setSelectedItem(null);
-    setSearchResults([]);
+    setFilteredParts([]);
     setQuantity(1);
   };
 
   const handleSelectSearchedItem = (part: Part) => {
     setSelectedItem(part);
     setSearchTerm(part.name);
-    setSearchResults([]);
+    setFilteredParts([]);
     document.getElementById('item-search')?.focus();
   };
 
@@ -340,9 +340,9 @@ export default function VendasPage() {
               min="1"
             />
           </div>
-          {searchResults.length > 0 && (
+          {filteredParts.length > 0 && (
             <div className="absolute top-full left-0 z-10 w-1/2 bg-white border rounded-md shadow-lg mt-1">
-              {searchResults.map((part) => (
+              {filteredParts.map((part) => (
                 <div
                   key={part.id}
                   className="p-2 hover:bg-gray-200 cursor-pointer text-black"
