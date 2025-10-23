@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { parts as allPartsData } from '@/lib/data';
 import type { Part } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 type CartItem = {
   part: Part;
@@ -23,6 +24,7 @@ const formatCurrency = (value: number | undefined | null) => {
 
 export default function VendasPage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Part[]>([]);
@@ -32,7 +34,8 @@ export default function VendasPage() {
     const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
 
     useEffect(() => {
-        setCurrentDateTime(new Date());
+        const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+        return () => clearInterval(timer);
     }, []);
 
     useEffect(() => {
@@ -79,6 +82,9 @@ export default function VendasPage() {
         if (e.key === 'Enter' && selectedItem) {
             handleAddItemToCart(selectedItem);
         }
+        if (e.key === 'Escape') {
+          router.push('/');
+        }
     }
 
     const subtotal = useMemo(() => {
@@ -93,7 +99,7 @@ export default function VendasPage() {
         return cartItems.reduce((acc, item) => acc + item.quantity, 0);
     }, [cartItems]);
 
-    const finishSale = () => {
+    const finishSale = (paymentMethod: string) => {
         if (cartItems.length === 0) {
             toast({
                 variant: 'destructive',
@@ -104,19 +110,30 @@ export default function VendasPage() {
         }
         toast({
             title: 'Venda Finalizada!',
-            description: `Total de ${formatCurrency(subtotal)} em ${totalItems} itens.`
+            description: `Total de ${formatCurrency(subtotal)} em ${totalItems} itens (${paymentMethod}).`
         });
         setCartItems([]);
         setLastAction('Venda finalizada. Caixa livre.');
     }
 
     const cancelSale = () => {
+        if (cartItems.length === 0) {
+          setLastAction('Nenhuma venda para cancelar. Caixa livre.');
+          return;
+        }
         setCartItems([]);
         setLastAction('Venda cancelada. Caixa livre.');
         toast({
             variant: 'destructive',
             title: 'Venda Cancelada',
         });
+    }
+
+    const showInfoToast = (title: string, description: string) => {
+      toast({
+        title: title,
+        description: description,
+      });
     }
 
 
@@ -207,15 +224,15 @@ export default function VendasPage() {
           <div className="flex justify-between bg-blue-700 p-2 text-white">
             <span>Nº. DE ITENS: {cartItems.length} | QUANTIDADES: {totalQuantity}</span>
             <div className="flex gap-4">
-                <Button size="sm" className="bg-blue-500 text-white">CLIENTES - F9</Button>
-                <Button size="sm" className="bg-blue-500 text-white">PARCELAS - F10</Button>
-                <Button size="sm" className="bg-blue-500 text-white">ULT. VENDA - F11</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Clientes (F9)', 'Função não implementada.')}>CLIENTES - F9</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Parcelas (F10)', 'Função não implementada.')}>PARCELAS - F10</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Última Venda (F11)', 'Função não implementada.')}>ULT. VENDA - F11</Button>
             </div>
           </div>
            <div className="flex justify-between bg-blue-700 p-2 text-white">
-                <Button size="sm" className="bg-blue-500 text-white">MAIS FUNÇÕES</Button>
-                <Button size="sm" className="bg-blue-500 text-white">INSTRUÇÕES</Button>
-                <Button size="sm" className="bg-blue-500 text-white">CALCULADORA - F12</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Mais Funções', 'Função não implementada.')}>MAIS FUNÇÕES</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Instruções', 'Função não implementada.')}>INSTRUÇÕES</Button>
+                <Button size="sm" className="bg-blue-500 text-white" onClick={() => showInfoToast('Calculadora (F12)', 'Função não implementada.')}>CALCULADORA - F12</Button>
             </div>
         </div>
 
@@ -248,12 +265,12 @@ export default function VendasPage() {
                 <Input className="mt-1" placeholder="Vendedor(a)"/>
             </div>
              <div className="space-y-2">
-                <ActionButton onClick={finishSale}>FINALIZAR VENDA - F1</ActionButton>
+                <ActionButton onClick={() => finishSale('Indefinido')}>FINALIZAR VENDA - F1</ActionButton>
                 <ActionButton onClick={cancelSale}>CANCELAR VENDA - F2</ActionButton>
-                <ActionButton onClick={finishSale}>VENDER A VISTA - F3</ActionButton>
-                <ActionButton onClick={finishSale}>VENDER A PRAZO - F4</ActionButton>
-                <ActionButton onClick={finishSale}>VENDER PARCELADO - F5</ActionButton>
-                <ActionButton>SAIR DO P.D.V - ESC</ActionButton>
+                <ActionButton onClick={() => finishSale('À Vista')}>VENDER A VISTA - F3</ActionButton>
+                <ActionButton onClick={() => finishSale('À Prazo')}>VENDER A PRAZO - F4</ActionButton>
+                <ActionButton onClick={() => finishSale('Parcelado')}>VENDER PARCELADO - F5</ActionButton>
+                <ActionButton onClick={() => router.push('/')}>SAIR DO P.D.V - ESC</ActionButton>
             </div>
            </div>
            <div className="space-y-2">
