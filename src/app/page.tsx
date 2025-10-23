@@ -10,7 +10,28 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { recentSales } from '@/lib/data';
+import { sales, parts } from '@/lib/data';
+
+const formatDate = (dateString: string) => {
+    const date = new Date(`${dateString}T00:00:00`);
+    return date.toLocaleDateString('pt-BR');
+};
+
+const getStatusInfo = (sale: (typeof sales)[0]) => {
+    switch (sale.paymentMethod) {
+        case 'Cartão':
+        case 'PIX':
+        case 'Dinheiro':
+        case 'À Vista':
+            return { text: 'Pago', variant: 'default', className: 'bg-green-600' };
+        case 'Parcelado':
+        case 'Prazo':
+            return { text: 'Pendente', variant: 'secondary', className: '' };
+        default:
+            return { text: 'Pendente', variant: 'secondary', className: '' };
+    }
+}
+
 
 export default function Home() {
   return (
@@ -68,24 +89,38 @@ export default function Home() {
               <TableRow>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Itens</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Funcionário</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead className="text-center">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentSales.map((sale) => (
-                <TableRow key={sale.id}>
-                  <TableCell>
-                    <div className="font-medium">{sale.customerName}</div>
-                    <div className="text-sm text-muted-foreground">{sale.customerEmail}</div>
-                  </TableCell>
-                  <TableCell>{sale.items}</TableCell>
-                  <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={sale.status === 'Pago' ? 'default' : 'secondary'} className={sale.status === 'Pago' ? 'bg-green-600' : ''}>{sale.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {sales.slice(0, 5).map((sale) => {
+                const statusInfo = getStatusInfo(sale);
+                return (
+                    <TableRow key={sale.id}>
+                    <TableCell>
+                        <div className="font-medium">{sale.customer?.name || 'N/A'}</div>
+                        {sale.customer?.email && <div className="text-sm text-muted-foreground">{sale.customer.email}</div>}
+                    </TableCell>
+                    <TableCell>
+                        <ul className="list-disc list-inside text-xs">
+                        {sale.items.map((item, index) => {
+                            const part = parts.find(p => p.id === item.partId);
+                            return <li key={index}>{item.quantity}x {part?.name || 'Peça desconhecida'}</li>
+                        })}
+                        </ul>
+                    </TableCell>
+                    <TableCell>{formatDate(sale.date)}</TableCell>
+                    <TableCell>{sale.employee.name}</TableCell>
+                    <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                    <TableCell className="text-center">
+                        <Badge variant={statusInfo.variant as any} className={statusInfo.className}>{statusInfo.text}</Badge>
+                    </TableCell>
+                    </TableRow>
+                )
+            })}
             </TableBody>
           </Table>
         </CardContent>
