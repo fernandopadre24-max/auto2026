@@ -27,11 +27,11 @@ import {
   generateDescriptionAction,
   suggestPriceAction,
 } from '@/app/pecas/actions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { useData } from '@/lib/data';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const formSchema = z.object({
   partName: z.string().min(2, { message: 'O nome da peça deve ter pelo menos 2 caracteres.' }),
@@ -62,9 +62,12 @@ function SubmitButton() {
 export function AddPartForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
-  const { addPart } = useData();
+  const { addPart, getPartById } = useData();
+  
+  const duplicateId = searchParams.get('duplicateId');
 
   const form = useForm<PartFormData>({
     resolver: zodResolver(formSchema),
@@ -83,6 +86,32 @@ export function AddPartForm() {
       description: '',
     },
   });
+
+  useEffect(() => {
+    if (duplicateId) {
+      const partToDuplicate = getPartById(duplicateId);
+      if (partToDuplicate) {
+        form.reset({
+          partName: partToDuplicate.name,
+          partCategory: partToDuplicate.category,
+          unit: partToDuplicate.unit,
+          manufacturer: partToDuplicate.manufacturer,
+          model: partToDuplicate.vehicleModel,
+          year: String(partToDuplicate.vehicleYear),
+          technicalSpecifications: partToDuplicate.technicalSpecifications,
+          condition: partToDuplicate.condition,
+          inventoryLevel: '0', // Reset stock for new part
+          purchasePrice: String(partToDuplicate.purchasePrice),
+          salePrice: String(partToDuplicate.salePrice),
+          description: partToDuplicate.description,
+        });
+         toast({
+          title: 'Peça Duplicada',
+          description: `Dados de "${partToDuplicate.name}" carregados. Crie um novo SKU e salve.`,
+        });
+      }
+    }
+  }, [duplicateId, getPartById, form, toast]);
   
   async function onSubmit(values: PartFormData) {
     try {
@@ -371,7 +400,7 @@ export function AddPartForm() {
                         ) : (
                         <Wand2 className="mr-2" />
                         )}
-                        Gerar com IA
+                        Gerar Descrição com IA
                     </Button>
                     </FormLabel>
                     <FormControl>
@@ -397,3 +426,5 @@ export function AddPartForm() {
     </Form>
   );
 }
+
+    

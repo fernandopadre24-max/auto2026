@@ -78,6 +78,7 @@ interface DataContextProps {
   addPart: (newPart: Omit<Part, 'id'>) => void;
   addSale: (newSale: Omit<Sale, 'id'>) => void;
   confirmPayment: (saleId: string) => void;
+  getPartById: (partId: string) => Part | undefined;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -165,6 +166,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         )
     );
   };
+
+  const getPartById = (partId: string) => {
+    return parts.find(p => p.id === partId);
+  }
   
   const value = {
     parts,
@@ -182,6 +187,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addPart,
     addSale,
     confirmPayment,
+    getPartById,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -194,3 +200,5 @@ export function useData() {
   }
   return context;
 }
+
+    

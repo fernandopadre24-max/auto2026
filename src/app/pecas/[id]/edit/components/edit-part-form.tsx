@@ -458,7 +458,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
                     ) : (
                       <Wand2 className="mr-2" />
                     )}
-                    Gerar com IA
+                    Gerar Descrição com IA
                   </Button>
                 </FormLabel>
                 <FormControl>
@@ -491,3 +491,5 @@ export function EditPartForm({ partId }: EditPartFormProps) {
     </Form>
   );
 }
+
+    
