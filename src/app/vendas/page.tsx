@@ -103,6 +103,9 @@ export default function VendasPage() {
   const handleSelectSearchedItem = (part: Part) => {
     setSelectedItem(part);
     setSearchTerm(part.name);
+    if (part.unit) {
+      setUnit(part.unit);
+    }
     document.getElementById('item-search')?.focus();
   };
 
