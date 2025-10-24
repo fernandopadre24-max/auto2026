@@ -59,7 +59,7 @@ export type Sale = {
     customerId?: string;
     items: SaleItem[];
     total: number;
-    paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro' | 'À Vista' | 'Prazo' | 'Parcelado';
+    paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro' | 'À Vista' | 'Prazo' | 'Parcelado' | 'Indefinido';
     installments: number;
     date: string;
 };

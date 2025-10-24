@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { useData } from '@/lib/data';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -40,6 +41,7 @@ function SubmitButton() {
 export function AddClienteForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const { addCustomer } = useData();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,7 +56,11 @@ export function AddClienteForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
      try {
-        console.log("Saving new customer (mock):", values);
+        addCustomer({
+          ...values,
+          phoneNumber: values.phoneNumber || '',
+          address: values.address || '',
+        });
         toast({
             title: 'Sucesso!',
             description: 'Novo cliente adicionado.',

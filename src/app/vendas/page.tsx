@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Part, Customer, Employee } from '@/lib/types';
+import type { Part, Customer, Employee, Sale } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { CustomerSearchDialog } from './components/customer-search-dialog';
@@ -29,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type CartItem = {
   part: Part;
   quantity: number;
-  unit: 'UN' | 'PC' | 'JG' | 'KT';
+  unit: string;
   discount: number;
 };
 
@@ -42,14 +42,14 @@ export default function VendasPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading, config } = useData();
+  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading, config, addSale } = useData();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState<Part | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [unit, setUnit] = useState<'UN' | 'PC' | 'JG' | 'KT'>('UN');
+  const [unit, setUnit] = useState<string>('UN');
   const [lastAction, setLastAction] = useState('Caixa Livre');
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -208,9 +208,9 @@ export default function VendasPage() {
 
     const customerForSale = details?.customer || selectedCustomer;
 
-    const saleData = {
-      employeeId: authenticatedEmployee?.id,
-      customerId: customerForSale?.id || null,
+    const saleData: Omit<Sale, 'id'> = {
+      employeeId: authenticatedEmployee!.id,
+      customerId: customerForSale?.id || undefined,
       items: cartItems.map((item) => ({
         partId: item.part.id,
         quantity: item.quantity,
@@ -218,12 +218,12 @@ export default function VendasPage() {
         discount: item.discount,
       })),
       total: subtotal,
-      paymentMethod: details?.paymentMethod || paymentMethod,
+      paymentMethod: details?.paymentMethod || paymentMethod as Sale['paymentMethod'],
       installments: details?.installments || 1,
       date: new Date().toISOString(),
     };
 
-    console.log("Saving sale data (mock):", saleData);
+    addSale(saleData);
 
     let description = `Total de ${formatCurrency(
         subtotal
@@ -388,7 +388,7 @@ export default function VendasPage() {
             />
             <Select
               onValueChange={(value) =>
-                setUnit(value as 'UN' | 'PC' | 'JG' | 'KT')
+                setUnit(value)
               }
               value={unit}
             >
@@ -400,6 +400,8 @@ export default function VendasPage() {
                 <SelectItem value="PC">PC</SelectItem>
                 <SelectItem value="JG">JG</SelectItem>
                 <SelectItem value="KT">KT</SelectItem>
+                <SelectItem value="M">M</SelectItem>
+                <SelectItem value="KG">KG</SelectItem>
               </SelectContent>
             </Select>
           </div>

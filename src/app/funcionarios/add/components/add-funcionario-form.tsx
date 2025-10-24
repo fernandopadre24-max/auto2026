@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useData } from '@/lib/data';
 
 const formSchema = z.object({
   firstName: z
@@ -44,6 +45,7 @@ function SubmitButton() {
 export function AddFuncionarioForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const { addEmployee } = useData();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,7 +60,10 @@ export function AddFuncionarioForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      console.log('Saving new employee (mock):', values);
+      addEmployee({
+        ...values,
+        phoneNumber: values.phoneNumber || '',
+      });
       toast({
         title: 'Sucesso!',
         description: 'Novo funcionário adicionado.',

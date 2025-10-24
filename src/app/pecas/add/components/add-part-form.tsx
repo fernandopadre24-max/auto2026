@@ -30,6 +30,8 @@ import {
 import { useState } from 'react';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+import { useData } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   partName: z.string().min(2, { message: 'O nome da peça deve ter pelo menos 2 caracteres.' }),
@@ -59,8 +61,10 @@ function SubmitButton() {
 
 export function AddPartForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
+  const { addPart } = useData();
 
   const form = useForm<PartFormData>({
     resolver: zodResolver(formSchema),
@@ -80,9 +84,9 @@ export function AddPartForm() {
     },
   });
   
-  async function createPartAction(values: PartFormData) {
+  async function onSubmit(values: PartFormData) {
     try {
-      const partData = {
+      addPart({
         name: values.partName,
         sku: `SKU-${Date.now()}`,
         stock: Number(values.inventoryLevel),
@@ -95,11 +99,10 @@ export function AddPartForm() {
         vehicleYear: Number(values.year),
         condition: values.condition,
         technicalSpecifications: values.technicalSpecifications,
-        description: values.description,
-      };
-      console.log('Saving part (mock):', partData);
+        description: values.description || '',
+      });
       toast({ title: "Sucesso!", description: "Nova peça adicionada ao catálogo." });
-      form.reset();
+      router.push('/pecas');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
       toast({ variant: 'destructive', title: "Erro", description: `Erro ao criar peça: ${errorMessage}` });
@@ -169,7 +172,7 @@ export function AddPartForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(createPartAction)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FormField
             control={form.control}
@@ -387,7 +390,7 @@ export function AddPartForm() {
             />
         </div>
         <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => form.reset()}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={() => router.push('/pecas')}>Cancelar</Button>
             <SubmitButton />
         </div>
       </form>

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import type { Part, Customer, Employee, Sale, StoreConfig } from './types';
+import { v4 as uuidv4 } from 'uuid';
 
 // Static Mock Data
 const mockParts: Part[] = [
@@ -41,8 +42,12 @@ interface DataContextProps {
   isLoading: boolean;
   saveConfig: (newConfig: StoreConfig) => void;
   updateCustomer: (updatedCustomer: Customer) => void;
+  addCustomer: (newCustomer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateEmployee: (updatedEmployee: Employee) => void;
+  addEmployee: (newEmployee: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updatePart: (updatedPart: Part) => void;
+  addPart: (newPart: Omit<Part, 'id'>) => void;
+  addSale: (newSale: Omit<Sale, 'id'>) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -67,16 +72,52 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setConfig(newConfig);
   };
 
+  const addCustomer = (newCustomerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newCustomer: Customer = {
+      ...newCustomerData,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setCustomers(prev => [...prev, newCustomer]);
+  };
+
   const updateCustomer = (updatedCustomer: Customer) => {
-    setCustomers(customers.map(c => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer } : c));
+    setCustomers(customers.map(c => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer, updatedAt: new Date().toISOString() } : c));
   };
   
-  const updateEmployee = (updatedEmployee: Employee) => {
-    setEmployees(employees.map(e => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee } : e));
+  const addEmployee = (newEmployeeData: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newEmployee: Employee = {
+      ...newEmployeeData,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setEmployees(prev => [...prev, newEmployee]);
   };
+
+  const updateEmployee = (updatedEmployee: Employee) => {
+    setEmployees(employees.map(e => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee, updatedAt: new Date().toISOString() } : e));
+  };
+
+  const addPart = (newPartData: Omit<Part, 'id'>) => {
+    const newPart: Part = {
+      ...newPartData,
+      id: uuidv4(),
+    };
+    setParts(prev => [...prev, newPart]);
+  }
 
   const updatePart = (updatedPart: Part) => {
     setParts(parts.map(p => p.id === updatedPart.id ? { ...p, ...updatedPart } : p));
+  }
+
+  const addSale = (newSaleData: Omit<Sale, 'id'>) => {
+    const newSale: Sale = {
+        ...newSaleData,
+        id: uuidv4(),
+    };
+    setSales(prev => [newSale, ...prev]);
   }
   
   const value = {
@@ -88,8 +129,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     isLoading,
     saveConfig,
     updateCustomer,
+    addCustomer,
     updateEmployee,
+    addEmployee,
     updatePart,
+    addPart,
+    addSale,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
