@@ -48,19 +48,19 @@ export const columns: ColumnDef<Part>[] = [
     header: 'SKU',
   },
   {
+    accessorKey: 'manufacturer',
+    header: 'Fabricante',
+  },
+  {
+    accessorKey: 'vehicleModel',
+    header: 'Modelo Veículo',
+  },
+  {
     accessorKey: 'stock',
     header: () => <div className="text-right">Estoque</div>,
     cell: ({ row }) => {
       const stock = parseFloat(row.getValue('stock'));
       return <div className="text-right font-medium">{stock}</div>;
-    },
-  },
-  {
-    accessorKey: 'purchasePrice',
-    header: () => <div className="text-right">Preço de Compra</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('purchasePrice'));
-      return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
     },
   },
   {

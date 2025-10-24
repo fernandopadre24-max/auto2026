@@ -45,6 +45,10 @@ export const columns: ColumnDef<Customer>[] = [
     header: 'Telefone',
   },
   {
+    accessorKey: 'address',
+    header: 'Endereço',
+  },
+  {
     id: 'actions',
     header: () => <div className="text-center">Ações</div>,
     cell: ({ row }) => {

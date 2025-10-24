@@ -20,6 +20,10 @@ const formatDate = (dateString: string) => {
     return date.toLocaleDateString('pt-BR');
 };
 
+const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
 export default function Home() {
   const { sales, parts, customers, employees } = useData();
 
@@ -117,7 +121,7 @@ export default function Home() {
                         <ul className="list-disc list-inside text-xs">
                         {sale.items.map((item, index) => {
                             const part = parts.find(p => p.id === item.partId);
-                            return <li key={index}>{item.quantity}x {part?.name || 'Peça desconhecida'}</li>
+                            return <li key={index}>{item.quantity}x {part?.name || 'Peça desconhecida'} ({formatCurrency(item.unitPrice)})</li>
                         })}
                         </ul>
                     </TableCell>
