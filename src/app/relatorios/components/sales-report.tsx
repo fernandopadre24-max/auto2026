@@ -36,9 +36,17 @@ import {
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useData } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import {
+  TooltipProvider,
+  Tooltip as UiTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -64,7 +72,7 @@ const formatPaymentMethod = (sale: Sale) => {
     if (sale.paymentMethod === 'Prazo') {
       return `${sale.termPaymentMethod} (Vence: ${formatDate(sale.dueDate)})`;
     }
-    if (sale.paymentMethod === 'Parcelado' && sale.installments > 1) {
+     if (sale.paymentMethod === 'Parcelado' && sale.installments > 1) {
         return `Cartão em ${sale.installments}x`;
     }
      if (sale.paymentMethod === 'Cartão' && sale.installments > 1) {
@@ -79,8 +87,19 @@ export function SalesReport({
   parts,
   customers
 }: SalesReportProps) {
+  const { toast } = useToast();
+  const { confirmPayment } = useData();
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
   const [expandedEmployees, setExpandedEmployees] = React.useState<Set<string>>(new Set());
+
+  const handleConfirmPayment = (saleId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    confirmPayment(saleId);
+    toast({
+        title: 'Pagamento Confirmado!',
+        description: 'O status da venda foi atualizado para "Pago".',
+    });
+  };
 
   const toggleEmployeeExpansion = (employeeId: string) => {
     setExpandedEmployees(prev => {
@@ -287,11 +306,27 @@ export function SalesReport({
                                 <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
                              <TableCell>
+                                <div className="flex items-center gap-2">
                                 <Badge className={cn({
                                     'bg-green-200 text-green-800': sale.status === 'Pago',
                                     'bg-red-200 text-red-800': sale.status === 'Cancelado',
                                     'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
                                 })}>{sale.status}</Badge>
+                                {sale.status === 'Pendente' && (
+                                     <TooltipProvider>
+                                      <UiTooltip>
+                                        <TooltipTrigger asChild>
+                                           <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600 hover:bg-green-100" onClick={(e) => handleConfirmPayment(sale.id, e)}>
+                                                <CheckCircle className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Confirmar Pagamento</p>
+                                        </TooltipContent>
+                                      </UiTooltip>
+                                    </TooltipProvider>
+                                )}
+                                </div>
                             </TableCell>
                             <TableCell className="text-right py-2 px-4">
                             {formatCurrency(sale.total)}
@@ -342,11 +377,27 @@ export function SalesReport({
                                             <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={cn({
-                                                'bg-green-200 text-green-800': sale.status === 'Pago',
-                                                'bg-red-200 text-red-800': sale.status === 'Cancelado',
-                                                'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
-                                            })}>{sale.status}</Badge>
+                                            <div className="flex items-center gap-2">
+                                                <Badge className={cn({
+                                                    'bg-green-200 text-green-800': sale.status === 'Pago',
+                                                    'bg-red-200 text-red-800': sale.status === 'Cancelado',
+                                                    'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
+                                                })}>{sale.status}</Badge>
+                                                 {sale.status === 'Pendente' && (
+                                                    <TooltipProvider>
+                                                        <UiTooltip>
+                                                            <TooltipTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600 hover:bg-green-100" onClick={(e) => handleConfirmPayment(sale.id, e)}>
+                                                                    <CheckCircle className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                            <p>Confirmar Pagamento</p>
+                                                            </TooltipContent>
+                                                        </UiTooltip>
+                                                    </TooltipProvider>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-right py-2 px-4">
                                         {formatCurrency(sale.total)}

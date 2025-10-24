@@ -48,6 +48,7 @@ interface DataContextProps {
   updatePart: (updatedPart: Part) => void;
   addPart: (newPart: Omit<Part, 'id'>) => void;
   addSale: (newSale: Omit<Sale, 'id'>) => void;
+  confirmPayment: (saleId: string) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -120,6 +121,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
     setSales(prev => [newSale, ...prev]);
   }
+
+  const confirmPayment = (saleId: string) => {
+    setSales(prevSales => 
+        prevSales.map(sale => 
+            sale.id === saleId ? { ...sale, status: 'Pago' } : sale
+        )
+    );
+  };
   
   const value = {
     parts,
@@ -136,6 +145,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updatePart,
     addPart,
     addSale,
+    confirmPayment,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

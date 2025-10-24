@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
-import { DollarSign, Users, Package, ShoppingCart, ChevronDown, ChevronRight } from 'lucide-react';
+import { DollarSign, Users, Package, ShoppingCart, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,6 +19,13 @@ import type { Sale } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '';
@@ -41,7 +48,8 @@ const formatPaymentMethod = (sale: Sale) => {
 }
 
 export default function Home() {
-  const { sales, parts, customers, employees } = useData();
+  const { sales, parts, customers, employees, confirmPayment } = useData();
+  const { toast } = useToast();
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
 
   const toggleEmployeeExpansion = (employeeId: string) => {
@@ -55,6 +63,15 @@ export default function Home() {
         return newSet;
     });
   }
+
+  const handleConfirmPayment = (saleId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    confirmPayment(saleId);
+    toast({
+        title: 'Pagamento Confirmado!',
+        description: 'O status da venda foi atualizado para "Pago".',
+    });
+  };
 
   const recentSales = useMemo(() => sales.slice(0, 10), [sales]);
   
@@ -180,11 +197,27 @@ export default function Home() {
                               <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
                             <TableCell>
+                                <div className="flex items-center gap-2">
                                 <Badge className={cn({
                                     'bg-green-200 text-green-800': sale.status === 'Pago',
                                     'bg-red-200 text-red-800': sale.status === 'Cancelado',
                                     'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
                                 })}>{sale.status}</Badge>
+                                {sale.status === 'Pendente' && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                           <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600 hover:bg-green-100" onClick={(e) => handleConfirmPayment(sale.id, e)}>
+                                                <CheckCircle className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Confirmar Pagamento</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                )}
+                                </div>
                             </TableCell>
                             <TableCell className="text-right py-2 px-4">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                             </TableRow>
