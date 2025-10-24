@@ -135,7 +135,7 @@ export function SalesReport({
 
   const getEmployeeName = (employeeId: string) => {
     const employee = employees.find(e => e.id === employeeId);
-    return employee ? `${employee.firstName} ${employee.lastName}`: 'N/A';
+    return employee ? `(${employee.employeeCode}) ${employee.firstName} ${employee.lastName}`: 'N/A';
   }
 
   const getCustomerName = (customerId: string) => {
