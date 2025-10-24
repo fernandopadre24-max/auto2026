@@ -412,47 +412,34 @@ export default function VendasPage() {
               </div>
               <p>Endereço: {config.address}</p>
               <p>CNPJ: {config.cnpj}</p>
-              <p className="border-b border-dashed border-gray-400 pb-1">
+              <p>
                 {currentDateTime
                   ? currentDateTime.toLocaleString('pt-BR')
                   : '...'}
               </p>
-              <div className="py-1 text-center font-bold">
+              <div className="py-1 text-center font-bold border-t border-b border-dashed border-gray-400 my-1">
                 <p>---- CUPOM NÃO FISCAL ----</p>
-                {selectedCustomer && <p>CLIENTE: {selectedCustomer.firstName} {selectedCustomer.lastName}</p>}
               </div>
-              <div className="border-b border-dashed border-gray-400 pb-1">
-                <div className="grid grid-cols-6">
-                  <span className="col-span-1">ITEM</span>
-                  <span className="col-span-1">CÓDIGO</span>
-                  <span className="col-span-2">DESCRICAO</span>
-                  <span className="col-span-1">QTD</span>
-                  <span className="text-right col-span-1">VL ITEM</span>
+              {selectedCustomer && <p className="text-center font-bold">CLIENTE: {selectedCustomer.firstName} {selectedCustomer.lastName}</p>}
+              <div className="grid grid-cols-[auto_auto_1fr_auto_auto] gap-x-2 border-b border-dashed border-gray-400 pb-1">
+                  <span>ITEM</span>
+                  <span>CÓDIGO</span>
+                  <span>DESCRICAO</span>
+                  <span className="text-center">QTD</span>
+                  <span className="text-right">VL ITEM</span>
                 </div>
-              </div>
               <ScrollArea className="h-[250px]">
                 {cartItems.map((item, index) => (
-                  <div key={item.part.id} className="py-1">
-                    <div className="grid grid-cols-6">
-                      <span className="col-span-1">
-                        {(index + 1).toString().padStart(3, '0')}
-                      </span>
-                      <span className="col-span-1">{item.part.sku}</span>
-                      <span className="col-span-4">{item.part.name}</span>
+                  <div key={item.part.id} className="py-1 border-b border-dashed border-gray-200">
+                    <div className="grid grid-cols-[auto_auto_1fr_auto] gap-x-2">
+                        <span>{(index + 1).toString().padStart(3, '0')}</span>
+                        <span>{item.part.sku}</span>
+                        <span className="truncate">{item.part.name}</span>
+                        <span className="text-right">{formatCurrency(item.part.salePrice * item.quantity - item.discount)}</span>
                     </div>
-                    <div className="grid grid-cols-6">
-                      <span className="col-start-4 col-span-1">
-                        {item.quantity}
-                        {item.unit} X {formatCurrency(item.part.salePrice)}
-                        {item.discount > 0 &&
-                          ` DESC ${formatCurrency(item.discount)}`}
-                      </span>
-                      <span className="col-span-2 text-right">
-                        SUBTOTAL{' '}
-                        {formatCurrency(
-                          item.part.salePrice * item.quantity - item.discount
-                        )}
-                      </span>
+                    <div className="grid grid-cols-[1fr_auto] gap-x-2">
+                      <span className="pl-16">{item.quantity}{item.unit} X {formatCurrency(item.part.salePrice)}</span>
+                      <span className="text-right font-bold">SUBTOTAL R$ {formatCurrency(item.part.salePrice * item.quantity - item.discount)}</span>
                     </div>
                   </div>
                 ))}
