@@ -75,7 +75,7 @@ interface DataContextProps {
   updateEmployee: (updatedEmployee: Employee) => void;
   addEmployee: (newEmployee: Omit<Employee, 'id' | 'createdAt' | 'updatedAt' | 'employeeCode'>) => void;
   updatePart: (updatedPart: Part) => void;
-  addPart: (newPart: Omit<Part, 'id'>) => void;
+  addPart: (newPart: Omit<Part, 'id' | 'sku'>) => void;
   addSale: (newSale: Omit<Sale, 'id'>) => void;
   confirmPayment: (saleId: string) => void;
   getPartById: (partId: string) => Part | undefined;
@@ -139,10 +139,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setEmployees(employees.map(e => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee, updatedAt: new Date().toISOString() } : e));
   };
 
-  const addPart = (newPartData: Omit<Part, 'id'>) => {
+  const addPart = (newPartData: Omit<Part, 'id' | 'sku'>) => {
     const newPart: Part = {
       ...newPartData,
       id: uuidv4(),
+      sku: `SKU-${Date.now().toString().slice(-5)}`,
     };
     setParts([...parts, newPart]);
   }

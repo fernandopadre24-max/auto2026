@@ -107,7 +107,7 @@ export function AddPartForm() {
         });
          toast({
           title: 'Peça Duplicada',
-          description: `Dados de "${partToDuplicate.name}" carregados. Crie um novo SKU e salve.`,
+          description: `Dados de "${partToDuplicate.name}" carregados. Um novo SKU será gerado ao salvar.`,
         });
       }
     }
@@ -117,7 +117,6 @@ export function AddPartForm() {
     try {
       addPart({
         name: values.partName,
-        sku: `SKU-${Date.now()}`,
         stock: Number(values.inventoryLevel),
         purchasePrice: Number(values.purchasePrice),
         salePrice: Number(values.salePrice),
