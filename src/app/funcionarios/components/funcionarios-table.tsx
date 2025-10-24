@@ -71,6 +71,10 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
       header: 'Email',
     },
     {
+      accessorKey: 'phoneNumber',
+      header: 'Contato',
+    },
+    {
       accessorKey: 'role',
       header: 'Cargo',
     },
