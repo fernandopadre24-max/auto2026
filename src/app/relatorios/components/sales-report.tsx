@@ -35,6 +35,8 @@ import {
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -69,6 +71,19 @@ export function SalesReport({
   customers
 }: SalesReportProps) {
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
+  const [expandedEmployees, setExpandedEmployees] = React.useState<Set<string>>(new Set());
+
+  const toggleEmployeeExpansion = (employeeId: string) => {
+    setExpandedEmployees(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(employeeId)) {
+            newSet.delete(employeeId);
+        } else {
+            newSet.add(employeeId);
+        }
+        return newSet;
+    });
+  }
   
     const filteredSales = React.useMemo(() => {
     let filtered = sales;
@@ -129,7 +144,7 @@ export function SalesReport({
   }
 
   let lastEmployeeId: string | null = null;
-  const colSpan = selectedEmployeeId === 'all' ? 6 : 5;
+  const colSpan = 5;
 
   return (
     <div className="flex flex-col gap-8">
@@ -213,6 +228,7 @@ export function SalesReport({
           <Table>
             <TableHeader>
               <TableRow>
+                {selectedEmployeeId === 'all' && <TableHead className="w-12"></TableHead>}
                 <TableHead>ID da Venda</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Itens</TableHead>
@@ -228,41 +244,51 @@ export function SalesReport({
                   if (showEmployeeHeader) {
                     lastEmployeeId = sale.employeeId;
                   }
+                  const isExpanded = expandedEmployees.has(sale.employeeId);
+
                   return (
                     <React.Fragment key={sale.id}>
                       {showEmployeeHeader && (
-                        <TableRow className="bg-muted/50 hover:bg-muted/50">
-                          <TableCell colSpan={colSpan} className="font-bold text-primary">
+                        <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleEmployeeExpansion(sale.employeeId)}>
+                          <TableCell>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </Button>
+                          </TableCell>
+                          <TableCell colSpan={colSpan + 1} className="font-bold text-primary">
                             {getEmployeeName(sale.employeeId)}
                           </TableCell>
                         </TableRow>
                       )}
-                      <TableRow>
-                        <TableCell className="font-medium">{sale.id}</TableCell>
-                        <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
-                        <TableCell>
-                          <ul>
-                            {sale.items.map((item, index) => {
-                              const part = parts.find((p) => p.id === item.partId);
-                              return (
-                                <li
-                                  key={index}
-                                  className="text-xs text-muted-foreground"
-                                >
-                                  {item.quantity}x {part?.name || 'Peça não encontrada'}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </TableCell>
-                        <TableCell>{formatDate(sale.date)}</TableCell>
-                        <TableCell>
-                            <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(sale.total)}
-                        </TableCell>
-                      </TableRow>
+                       {(selectedEmployeeId !== 'all' || isExpanded) && (
+                        <TableRow>
+                            {selectedEmployeeId === 'all' && <TableCell />}
+                            <TableCell className="font-medium">{sale.id}</TableCell>
+                            <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
+                            <TableCell>
+                            <ul>
+                                {sale.items.map((item, index) => {
+                                const part = parts.find((p) => p.id === item.partId);
+                                return (
+                                    <li
+                                    key={index}
+                                    className="text-xs text-muted-foreground"
+                                    >
+                                    {item.quantity}x {part?.name || 'Peça não encontrada'}
+                                    </li>
+                                );
+                                })}
+                            </ul>
+                            </TableCell>
+                            <TableCell>{formatDate(sale.date)}</TableCell>
+                            <TableCell>
+                                <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                            {formatCurrency(sale.total)}
+                            </TableCell>
+                        </TableRow>
+                       )}
                     </React.Fragment>
                   );
                 })
