@@ -102,13 +102,12 @@ export default function Home() {
                 <TableHead>Itens</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Funcionário</TableHead>
+                <TableHead>Pagamento</TableHead>
                 <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-center">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sales.slice(0, 5).map((sale) => {
-                const statusInfo = getStatusInfo(sale);
                 const customer = customers.find(c => c.id === sale.customerId);
                 const employee = employees.find(e => e.id === sale.employeeId);
                 return (
@@ -127,10 +126,10 @@ export default function Home() {
                     </TableCell>
                     <TableCell>{formatDate(sale.date)}</TableCell>
                     <TableCell>{employee ? `${employee.firstName} ${employee.lastName}` : 'N/A'}</TableCell>
-                    <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
-                    <TableCell className="text-center">
-                        <Badge variant={statusInfo.variant as any} className={statusInfo.className}>{statusInfo.text}</Badge>
+                    <TableCell>
+                      <Badge variant="secondary">{sale.paymentMethod}</Badge>
                     </TableCell>
+                    <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                     </TableRow>
                 )
             })}
