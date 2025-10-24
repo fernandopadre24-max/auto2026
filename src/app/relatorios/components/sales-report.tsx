@@ -53,6 +53,9 @@ import {
 } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { subDays } from 'date-fns';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -103,6 +106,10 @@ export function SalesReport({
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
   const [expandedEmployees, setExpandedEmployees] = React.useState<Set<string>>(new Set());
   const [chartType, setChartType] = React.useState<ChartType>('revenueByEmployee');
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: subDays(new Date(), 29),
+    to: new Date(),
+  });
 
   const handleConfirmPayment = (saleId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -127,13 +134,30 @@ export function SalesReport({
   
     const filteredSales = React.useMemo(() => {
     let filtered = sales;
+
+    if (dateRange?.from) {
+        filtered = filtered.filter(sale => {
+            const saleDate = new Date(sale.date);
+            const from = dateRange.from!;
+            // Set time to 00:00:00 for the start date
+            from.setHours(0, 0, 0, 0);
+            if (dateRange.to) {
+                const to = dateRange.to;
+                // Set time to 23:59:59 for the end date
+                to.setHours(23, 59, 59, 999);
+                return saleDate >= from && saleDate <= to;
+            }
+            return saleDate >= from;
+        });
+    }
+
     if (selectedEmployeeId !== 'all') {
-      filtered = sales.filter((sale) => sale.employeeId === selectedEmployeeId);
+      filtered = filtered.filter((sale) => sale.employeeId === selectedEmployeeId);
     }
     
     // Sort by date (newest first)
     return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [sales, selectedEmployeeId]);
+  }, [sales, selectedEmployeeId, dateRange]);
 
   const groupedSales = React.useMemo(() => {
     return filteredSales.reduce((acc, sale) => {
@@ -161,9 +185,11 @@ export function SalesReport({
 
 
   const chartData = React.useMemo(() => {
+    const dataForChart = filteredSales;
+
     if (chartType === 'revenueByCategory') {
         const categoryMap = new Map<string, number>();
-        sales.forEach(sale => {
+        dataForChart.forEach(sale => {
             if (sale.status === 'Pago') {
                 sale.items.forEach(item => {
                     const part = parts.find(p => p.id === item.partId);
@@ -185,7 +211,7 @@ export function SalesReport({
       salesMap.set(emp.id, { name: `${emp.firstName} ${emp.lastName}`, totalRevenue: 0, totalSales: 0 });
     });
 
-    sales.forEach((sale) => {
+    dataForChart.forEach((sale) => {
       const empData = salesMap.get(sale.employeeId);
       if (empData) {
         if (sale.status === 'Pago') {
@@ -196,19 +222,19 @@ export function SalesReport({
     });
 
     return Array.from(salesMap.values());
-  }, [sales, employees, parts, chartType]);
+  }, [filteredSales, employees, parts, chartType]);
 
   const totalFilteredRevenue = React.useMemo(() => {
     return filteredSales.reduce((acc, sale) => acc + sale.total, 0);
   }, [filteredSales]);
 
   const grandTotalRevenue = React.useMemo(() => {
-    return sales.reduce((acc, sale) => acc + sale.total, 0);
-  }, [sales]);
+    return filteredSales.reduce((acc, sale) => acc + sale.total, 0);
+  }, [filteredSales]);
 
-  const totalRevenuePaid = React.useMemo(() => sales.filter(s => s.status === 'Pago').reduce((sum, s) => sum + s.total, 0), [sales]);
-  const totalRevenuePending = React.useMemo(() => sales.filter(s => s.status === 'Pendente').reduce((sum, s) => sum + s.total, 0), [sales]);
-  const totalSalesCount = sales.length;
+  const totalRevenuePaid = React.useMemo(() => filteredSales.filter(s => s.status === 'Pago').reduce((sum, s) => sum + s.total, 0), [filteredSales]);
+  const totalRevenuePending = React.useMemo(() => filteredSales.filter(s => s.status === 'Pendente').reduce((sum, s) => sum + s.total, 0), [filteredSales]);
+  const totalSalesCount = filteredSales.length;
 
   const totalFilteredSales = filteredSales.length;
 
@@ -283,42 +309,42 @@ export function SalesReport({
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-blue-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Total (Período)</CardTitle>
             <TrendingUp className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(grandTotalRevenue)}</div>
-            <p className="text-xs text-blue-100">Soma de todas as vendas</p>
+            <p className="text-xs text-blue-100">Soma de todas as vendas no período</p>
           </CardContent>
         </Card>
         <Card className="bg-emerald-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Paga</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Paga (Período)</CardTitle>
             <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalRevenuePaid)}</div>
-            <p className="text-xs text-emerald-100">Total já recebido</p>
+            <p className="text-xs text-emerald-100">Total recebido no período</p>
           </CardContent>
         </Card>
         <Card className="bg-amber-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Pendente</CardTitle>
+            <CardTitle className="text-sm font-medium">Receita Pendente (Período)</CardTitle>
             <Hourglass className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalRevenuePending)}</div>
-            <p className="text-xs text-amber-100">Valores a receber</p>
+            <p className="text-xs text-amber-100">Valores a receber no período</p>
           </CardContent>
         </Card>
         <Card className="bg-purple-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Vendas</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Vendas (Período)</CardTitle>
             <ShoppingCart className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalSalesCount}</div>
-            <p className="text-xs text-purple-100">Número de transações</p>
+            <p className="text-xs text-purple-100">Número de transações no período</p>
           </CardContent>
         </Card>
       </div>
@@ -354,7 +380,7 @@ export function SalesReport({
       </Card>
       <Card className="bg-yellow-100 font-mono text-black border-yellow-200 shadow-lg">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <CardTitle className="text-xl">Vendas Detalhadas</CardTitle>
               <CardDescription className="text-gray-700">
@@ -362,23 +388,26 @@ export function SalesReport({
                 {formatCurrency(totalFilteredRevenue)}.
               </CardDescription>
             </div>
-            <div className="w-64">
-              <Select
-                value={selectedEmployeeId}
-                onValueChange={setSelectedEmployeeId}
-              >
-                <SelectTrigger className="bg-white">
-                  <SelectValue placeholder="Filtrar por funcionário" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Funcionários</SelectItem>
-                  {employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
-                      {employee.firstName} {employee.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap items-center gap-4">
+                 <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+                 <div className="w-64">
+                    <Select
+                        value={selectedEmployeeId}
+                        onValueChange={setSelectedEmployeeId}
+                    >
+                        <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Filtrar por funcionário" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="all">Todos os Funcionários</SelectItem>
+                        {employees.map((employee) => (
+                            <SelectItem key={employee.id} value={employee.id}>
+                            {employee.firstName} {employee.lastName}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
           </div>
         </CardHeader>
@@ -528,20 +557,16 @@ export function SalesReport({
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center">
-                    Nenhum resultado.
+                    Nenhum resultado para o período selecionado.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
              {totalFilteredSales > 0 && (
               <TableFooter>
-                <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
-                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 6} className="text-right font-bold py-2 px-4">Total Filtrado</TableCell>
-                  <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(totalFilteredRevenue)}</TableCell>
-                </TableRow>
                 <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100 bg-yellow-50">
-                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 6} className="text-right font-extrabold py-2 px-4 text-blue-900">Total Geral (Todas as Vendas)</TableCell>
-                  <TableCell className="text-right font-extrabold py-2 px-4 text-blue-900">{formatCurrency(grandTotalRevenue)}</TableCell>
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 6} className="text-right font-extrabold py-2 px-4 text-blue-900">Total no Período</TableCell>
+                  <TableCell className="text-right font-extrabold py-2 px-4 text-blue-900">{formatCurrency(totalFilteredRevenue)}</TableCell>
                 </TableRow>
               </TableFooter>
             )}
