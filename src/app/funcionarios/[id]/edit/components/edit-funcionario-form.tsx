@@ -19,6 +19,7 @@ import { Loader2 } from 'lucide-react';
 import { useData } from '@/lib/data';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFormStatus } from 'react-dom';
 
 const formSchema = z.object({
   firstName: z
@@ -37,9 +38,7 @@ type EditFuncionarioFormProps = {
 };
 
 function SubmitButton() {
-  const { pending } = useForm({
-    resolver: zodResolver(formSchema),
-  });
+  const { pending } = useFormStatus();
 
   return (
     <Button type="submit" disabled={pending}>
