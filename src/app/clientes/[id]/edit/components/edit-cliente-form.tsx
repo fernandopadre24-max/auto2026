@@ -20,6 +20,7 @@ import { useData } from '@/lib/data';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFormStatus } from 'react-dom';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   firstName: z
@@ -67,7 +68,10 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
 
   useEffect(() => {
     if (customer) {
-      form.reset(customer);
+      form.reset({
+        ...customer,
+        phoneNumber: customer.phoneNumber ? formatPhoneNumber(customer.phoneNumber) : '',
+      });
     }
   }, [customer, form]);
 
@@ -77,7 +81,7 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
       updateCustomer({
         ...customer,
         ...values,
-        phoneNumber: values.phoneNumber || '',
+        phoneNumber: values.phoneNumber?.replace(/\D/g, '') || '',
         address: values.address || '',
       });
       toast({
@@ -157,7 +161,11 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''}/>
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field}
+                    onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                    value={field.value || ''}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -20,6 +20,7 @@ import { useData } from '@/lib/data';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFormStatus } from 'react-dom';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   firstName: z
@@ -71,7 +72,10 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
 
   useEffect(() => {
     if (employee) {
-      form.reset(employee);
+      form.reset({
+        ...employee,
+        phoneNumber: employee.phoneNumber ? formatPhoneNumber(employee.phoneNumber) : '',
+      });
     }
   }, [employee, form]);
 
@@ -81,7 +85,7 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
       updateEmployee({
         ...employee,
         ...values,
-        phoneNumber: values.phoneNumber || '',
+        phoneNumber: values.phoneNumber?.replace(/\D/g, '') || '',
         address: values.address || '',
         cpf: values.cpf || '',
       });
@@ -169,7 +173,12 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''} />
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field} 
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>

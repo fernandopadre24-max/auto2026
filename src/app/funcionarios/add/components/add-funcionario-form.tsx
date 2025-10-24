@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/data';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   firstName: z
@@ -66,7 +67,7 @@ export function AddFuncionarioForm() {
     try {
       addEmployee({
         ...values,
-        phoneNumber: values.phoneNumber || '',
+        phoneNumber: values.phoneNumber?.replace(/\D/g, '') || '',
         address: values.address || '',
         cpf: values.cpf || '',
       });
@@ -139,7 +140,11 @@ export function AddFuncionarioForm() {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field}
+                    onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

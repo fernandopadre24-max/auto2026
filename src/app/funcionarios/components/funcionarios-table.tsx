@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { useData } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import { formatPhoneNumber } from '@/lib/utils';
 
 type FuncionariosTableProps = {
   data: Employee[];
@@ -73,6 +74,7 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
     {
       accessorKey: 'phoneNumber',
       header: 'Contato',
+      cell: ({ row }) => row.original.phoneNumber ? formatPhoneNumber(row.original.phoneNumber) : '',
     },
     {
       accessorKey: 'role',

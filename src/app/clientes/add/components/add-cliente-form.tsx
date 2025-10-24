@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useData } from '@/lib/data';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -58,7 +59,7 @@ export function AddClienteForm() {
      try {
         addCustomer({
           ...values,
-          phoneNumber: values.phoneNumber || '',
+          phoneNumber: values.phoneNumber?.replace(/\D/g, '') || '',
           address: values.address || '',
         });
         toast({
@@ -126,7 +127,11 @@ export function AddClienteForm() {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field} 
+                    onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

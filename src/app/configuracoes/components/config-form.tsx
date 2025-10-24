@@ -20,6 +20,7 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useData } from '@/lib/data';
 import type { StoreConfig } from '@/lib/types';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   storeName: z.string().min(2, { message: 'O nome da loja é obrigatório.' }),
@@ -53,13 +54,19 @@ export function ConfigForm() {
 
   useEffect(() => {
     if (configData) {
-      form.reset(configData);
+      form.reset({
+        ...configData,
+        phone: configData.phone ? formatPhoneNumber(configData.phone) : '',
+      });
     }
   }, [configData, form]);
 
   async function onSubmit(values: StoreConfig) {
     try {
-      saveConfig(values);
+      saveConfig({
+        ...values,
+        phone: values.phone?.replace(/\D/g, ''),
+      });
       toast({
         title: 'Sucesso!',
         description: 'As configurações da loja foram atualizadas.',
@@ -152,7 +159,12 @@ export function ConfigForm() {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''} />
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field} 
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
