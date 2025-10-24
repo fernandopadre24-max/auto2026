@@ -73,44 +73,44 @@ export default function Home() {
     <div className="flex flex-col gap-8">
       <PageHeader title="Painel" />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="bg-emerald-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
-            <p className="text-xs text-muted-foreground">+20.1% em relação ao mês passado</p>
+            <p className="text-xs text-emerald-100">+20.1% em relação ao mês passado</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-blue-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Clientes Ativos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{customers.length}</div>
-            <p className="text-xs text-muted-foreground">+180.1% em relação ao mês passado</p>
+            <p className="text-xs text-blue-100">+180.1% em relação ao mês passado</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-purple-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Vendas Hoje</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <ShoppingCart className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{sales.filter(s => new Date(s.date).toDateString() === new Date().toDateString()).length}</div>
-            <p className="text-xs text-muted-foreground">+19% em relação a ontem</p>
+            <p className="text-xs text-purple-100">+19% em relação a ontem</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-orange-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Peças em Estoque</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalParts}</div>
-            <p className="text-xs text-muted-foreground">2 abaixo do mínimo</p>
+            <p className="text-xs text-orange-100">2 abaixo do mínimo</p>
           </CardContent>
         </Card>
       </div>
