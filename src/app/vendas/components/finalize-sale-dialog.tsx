@@ -88,14 +88,18 @@ export function FinalizeSaleDialog({
   const installmentValue = subtotal > 0 && installments > 0 ? subtotal / installments : 0;
 
   const handleConfirm = () => {
-    const customer = customers.find(c => c.id === selectedCustomerId);
+    let customer = customers.find(c => c.id === selectedCustomerId);
+    
     if (!customer) {
-        toast({
-            variant: 'destructive',
-            title: 'Cliente não selecionado',
-            description: 'Por favor, selecione um cliente para continuar.'
-        });
-        return;
+        customer = customers.find(c => c.email === 'consumidor@final.com');
+        if (!customer) {
+             toast({
+                variant: 'destructive',
+                title: 'Cliente Padrão não encontrado',
+                description: 'Não foi possível encontrar o cliente "Consumidor Final".'
+            });
+            return;
+        }
     }
     
     if (saleType === 'prazo' && !dueDate) {
@@ -134,12 +138,12 @@ export function FinalizeSaleDialog({
         <DialogHeader>
           <DialogTitle>Finalizar Venda {saleType === 'prazo' ? 'a Prazo' : 'Parcelada'}</DialogTitle>
           <DialogDescription>
-            Selecione o cliente e as condições de pagamento.
+            Selecione o cliente e as condições de pagamento. Deixar em branco para "Consumidor Final".
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
             <div className="grid gap-2">
-                <Label htmlFor="customer">Cliente</Label>
+                <Label htmlFor="customer">Cliente (Opcional)</Label>
                  <Select onValueChange={setSelectedCustomerId} value={selectedCustomerId || ''}>
                     <SelectTrigger id="customer">
                         <SelectValue placeholder="Selecione um cliente" />
