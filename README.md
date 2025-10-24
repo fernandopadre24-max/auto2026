@@ -12,3 +12,4 @@ To get started, take a look at src/app/page.tsx.
 # autopacas
 # AutoPe-as
 # AutoPe-as
+# auto
