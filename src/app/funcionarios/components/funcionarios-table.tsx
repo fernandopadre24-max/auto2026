@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { Employee } from '@/lib/types';
 import {
   ColumnDef,
@@ -23,8 +23,6 @@ import {
   getSortedRowModel,
   ColumnFiltersState,
   getFilteredRowModel,
-  ExpandedState,
-  getExpandedRowModel,
 } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
@@ -32,7 +30,6 @@ import { useData } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { formatPhoneNumber } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
 
 type FuncionariosTableProps = {
   data: Employee[];
@@ -42,7 +39,6 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
-  const [expanded, setExpanded] = React.useState<ExpandedState>({});
   const { deleteEmployee } = useData();
   const { toast } = useToast();
   const [employeeToDelete, setEmployeeToDelete] =
@@ -65,26 +61,6 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
 
   const columns: ColumnDef<Employee>[] = [
     {
-      id: 'expander',
-      header: () => null,
-      cell: ({ row }) => {
-        return (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={row.getToggleExpandedHandler()}
-            className="h-8 w-8"
-          >
-            {row.getIsExpanded() ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
-        );
-      },
-    },
-    {
       accessorKey: 'employeeCode',
       header: 'Código',
     },
@@ -104,6 +80,10 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
         row.original.phoneNumber
           ? formatPhoneNumber(row.original.phoneNumber)
           : '',
+    },
+     {
+      accessorKey: 'address',
+      header: 'Endereço',
     },
     {
       accessorKey: 'role',
@@ -146,12 +126,9 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onExpandedChange: setExpanded,
-    getExpandedRowModel: getExpandedRowModel(),
     state: {
       sorting,
       columnFilters,
-      expanded,
     },
   });
 
@@ -201,8 +178,8 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <React.Fragment key={row.id}>
                     <TableRow
+                      key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -214,31 +191,6 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
                         </TableCell>
                       ))}
                     </TableRow>
-                    {row.getIsExpanded() && (
-                      <TableRow className="bg-muted/50 hover:bg-muted/50">
-                        <TableCell colSpan={columns.length}>
-                          <Card>
-                            <CardContent className="pt-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <h4 className="font-semibold mb-2">
-                                    Endereço
-                                  </h4>
-                                  <p>
-                                    {row.original.address || 'Não informado'}
-                                  </p>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold mb-2">CPF</h4>
-                                  <p>{row.original.cpf || 'Não informado'}</p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
                 ))
               ) : (
                 <TableRow>
