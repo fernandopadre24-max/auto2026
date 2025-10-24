@@ -37,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 
 type PartsTableProps = {
   data: Part[];
@@ -130,17 +131,17 @@ export function PartsTable({ data }: PartsTableProps) {
         const part = row.original;
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(part.id)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-yellow-200" onClick={() => handleDuplicate(part.id)}>
                 <Copy className="h-4 w-4" />
                 <span className="sr-only">Duplicar</span>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-yellow-200" asChild>
               <Link href={`/pecas/${part.id}/edit`}>
                 <Pencil className="h-4 w-4" />
                 <span className="sr-only">Editar</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => handleDelete(part)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-yellow-200" onClick={() => handleDelete(part)}>
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Excluir</span>
             </Button>
@@ -175,93 +176,104 @@ export function PartsTable({ data }: PartsTableProps) {
         itemType="peça"
       />
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Input
-          placeholder="Filtrar por nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-        />
-         <Input
-          placeholder="Filtrar por fabricante..."
-          value={(table.getColumn('manufacturer')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('manufacturer')?.setFilterValue(event.target.value)
-          }
-        />
-        <Input
-          placeholder="Filtrar por categoria..."
-          value={(table.getColumn('category')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('category')?.setFilterValue(event.target.value)
-          }
-        />
-        <Select
-            value={(table.getColumn('unit')?.getFilterValue() as string) ?? ''}
-            onValueChange={(value) => table.getColumn('unit')?.setFilterValue(value === 'all' ? '' : value)}
-        >
-            <SelectTrigger>
-                <SelectValue placeholder="Filtrar por Unidade" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="all">Todas as Unidades</SelectItem>
-                {uniqueUnits.map(unit => (
-                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      <Card className="bg-blue-800 text-white p-4">
+        <CardContent className="p-0">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Input
+            placeholder="Filtrar por nome..."
+            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            onChange={(event) =>
+                table.getColumn('name')?.setFilterValue(event.target.value)
+            }
+            className="bg-white text-black"
+            />
+            <Input
+            placeholder="Filtrar por fabricante..."
+            value={(table.getColumn('manufacturer')?.getFilterValue() as string) ?? ''}
+            onChange={(event) =>
+                table.getColumn('manufacturer')?.setFilterValue(event.target.value)
+            }
+             className="bg-white text-black"
+            />
+            <Input
+            placeholder="Filtrar por categoria..."
+            value={(table.getColumn('category')?.getFilterValue() as string) ?? ''}
+            onChange={(event) =>
+                table.getColumn('category')?.setFilterValue(event.target.value)
+            }
+             className="bg-white text-black"
+            />
+            <Select
+                value={(table.getColumn('unit')?.getFilterValue() as string) ?? ''}
+                onValueChange={(value) => table.getColumn('unit')?.setFilterValue(value === 'all' ? '' : value)}
+            >
+                <SelectTrigger className="bg-white text-black">
+                    <SelectValue placeholder="Filtrar por Unidade" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todas as Unidades</SelectItem>
+                    {uniqueUnits.map(unit => (
+                        <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="font-mono text-black bg-yellow-100 border-yellow-200 shadow-lg">
+        <CardContent className="p-0">
+            <Table>
+            <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="border-b-gray-400 border-dashed hover:bg-yellow-100/50">
+                    {headerGroup.headers.map((header) => {
+                    return (
+                        <TableHead key={header.id} className="text-black">
+                        {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                            )}
+                        </TableHead>
+                    );
+                    })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Nenhum resultado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                ))}
+            </TableHeader>
+            <TableBody>
+                {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                    <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50"
+                    >
+                    {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                        {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                        )}
+                        </TableCell>
+                    ))}
+                    </TableRow>
+                ))
+                ) : (
+                <TableRow>
+                    <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                    >
+                    Nenhum resultado.
+                    </TableCell>
+                </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
        <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
