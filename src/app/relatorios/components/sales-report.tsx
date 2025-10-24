@@ -13,6 +13,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -58,8 +59,11 @@ const formatDate = (dateString: string) => {
 };
 
 const formatPaymentMethod = (sale: Sale) => {
-    if (sale.installments > 1) {
-        return `${sale.paymentMethod} (${sale.installments}x)`;
+    if (sale.paymentMethod === 'Parcelado' && sale.installments > 1) {
+        return `Cartão em ${sale.installments}x`;
+    }
+     if (sale.paymentMethod === 'Cartão' && sale.installments > 1) {
+        return `Cartão em ${sale.installments}x`;
     }
     return sale.paymentMethod;
 }
@@ -156,7 +160,8 @@ export function SalesReport({
     return customer ? `${customer.firstName} ${customer.lastName}`: 'N/A';
   }
 
-  const colSpan = 6;
+  const getHeaderColSpan = () => selectedEmployeeId === 'all' ? 5 : 6;
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -292,7 +297,7 @@ export function SalesReport({
                                             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                         </Button>
                                     </TableCell>
-                                    <TableCell colSpan={colSpan - 1} className="font-bold text-primary">
+                                    <TableCell colSpan={getHeaderColSpan() - 1} className="font-bold text-primary">
                                         {getEmployeeName(employeeId)}
                                     </TableCell>
                                     <TableCell className="text-right font-bold text-primary">
@@ -334,12 +339,20 @@ export function SalesReport({
                 )
               ) : (
                 <TableRow>
-                  <TableCell colSpan={colSpan + 1} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     Nenhum resultado.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
+             {totalSales > 0 && (
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 6 : 6} className="text-right font-bold">Total Geral</TableCell>
+                  <TableCell className="text-right font-bold">{formatCurrency(totalRevenue)}</TableCell>
+                </TableRow>
+              </TableFooter>
+            )}
           </Table>
         </CardContent>
       </Card>
