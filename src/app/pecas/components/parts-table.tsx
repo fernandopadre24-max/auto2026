@@ -30,6 +30,13 @@ import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type PartsTableProps = {
   data: Part[];
@@ -49,6 +56,11 @@ export function PartsTable({ data }: PartsTableProps) {
   const { deletePart } = useData();
   const { toast } = useToast();
   const [partToDelete, setPartToDelete] = React.useState<Part | null>(null);
+
+  const uniqueUnits = React.useMemo(() => {
+    const units = new Set(data.map(part => part.unit));
+    return Array.from(units);
+  }, [data]);
 
   const handleDuplicate = (partId: string) => {
     router.push(`/pecas/add?duplicateId=${partId}`);
@@ -163,15 +175,42 @@ export function PartsTable({ data }: PartsTableProps) {
         itemType="peça"
       />
     <div className="flex flex-col gap-4">
-      <div className="flex items-center">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Input
           placeholder="Filtrar por nome..."
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('name')?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
         />
+         <Input
+          placeholder="Filtrar por fabricante..."
+          value={(table.getColumn('manufacturer')?.getFilterValue() as string) ?? ''}
+          onChange={(event) =>
+            table.getColumn('manufacturer')?.setFilterValue(event.target.value)
+          }
+        />
+        <Input
+          placeholder="Filtrar por categoria..."
+          value={(table.getColumn('category')?.getFilterValue() as string) ?? ''}
+          onChange={(event) =>
+            table.getColumn('category')?.setFilterValue(event.target.value)
+          }
+        />
+        <Select
+            value={(table.getColumn('unit')?.getFilterValue() as string) ?? ''}
+            onValueChange={(value) => table.getColumn('unit')?.setFilterValue(value === 'all' ? '' : value)}
+        >
+            <SelectTrigger>
+                <SelectValue placeholder="Filtrar por Unidade" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todas as Unidades</SelectItem>
+                {uniqueUnits.map(unit => (
+                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
       </div>
       <div className="rounded-md border">
         <Table>
