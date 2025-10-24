@@ -40,7 +40,7 @@ import {
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronRight, DollarSign, Hourglass, ShoppingCart, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useData } from '@/lib/data';
@@ -206,6 +206,10 @@ export function SalesReport({
     return sales.reduce((acc, sale) => acc + sale.total, 0);
   }, [sales]);
 
+  const totalRevenuePaid = React.useMemo(() => sales.filter(s => s.status === 'Pago').reduce((sum, s) => sum + s.total, 0), [sales]);
+  const totalRevenuePending = React.useMemo(() => sales.filter(s => s.status === 'Pendente').reduce((sum, s) => sum + s.total, 0), [sales]);
+  const totalSalesCount = sales.length;
+
   const totalFilteredSales = filteredSales.length;
 
   const getEmployeeName = (employeeId: string) => {
@@ -276,6 +280,49 @@ export function SalesReport({
 
   return (
     <div className="flex flex-col gap-8">
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-blue-500 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+            <TrendingUp className="h-4 w-4 text-white" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(grandTotalRevenue)}</div>
+            <p className="text-xs text-blue-100">Soma de todas as vendas</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-emerald-500 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Receita Paga</CardTitle>
+            <DollarSign className="h-4 w-4 text-white" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalRevenuePaid)}</div>
+            <p className="text-xs text-emerald-100">Total já recebido</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-amber-500 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Receita Pendente</CardTitle>
+            <Hourglass className="h-4 w-4 text-white" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalRevenuePending)}</div>
+            <p className="text-xs text-amber-100">Valores a receber</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-purple-500 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Vendas</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-white" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalSalesCount}</div>
+            <p className="text-xs text-purple-100">Número de transações</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
