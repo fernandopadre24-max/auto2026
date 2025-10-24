@@ -405,6 +405,7 @@ export default function VendasPage() {
                 <SelectItem value="KT">KT</SelectItem>
                 <SelectItem value="M">M</SelectItem>
                 <SelectItem value="KG">KG</SelectItem>
+                <SelectItem value="CX">CX</SelectItem>
               </SelectContent>
             </Select>
           </div>
