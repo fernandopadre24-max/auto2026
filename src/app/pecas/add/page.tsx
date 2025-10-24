@@ -3,6 +3,8 @@ import { AddPartForm } from './components/add-part-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AddPartPage() {
   return (
@@ -16,7 +18,9 @@ export default function AddPartPage() {
       </PageHeader>
       <Card>
         <CardContent className="pt-6">
-          <AddPartForm />
+          <Suspense fallback={<Skeleton className="h-[500px] w-full" />}>
+            <AddPartForm />
+          </Suspense>
         </CardContent>
       </Card>
     </div>
