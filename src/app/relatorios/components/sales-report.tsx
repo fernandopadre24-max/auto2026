@@ -70,12 +70,27 @@ export function SalesReport({
 }: SalesReportProps) {
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
   
-  const filteredSales = React.useMemo(() => {
-    if (selectedEmployeeId === 'all') {
-      return sales;
+    const filteredSales = React.useMemo(() => {
+    let filtered = sales;
+    if (selectedEmployeeId !== 'all') {
+      filtered = sales.filter((sale) => sale.employeeId === selectedEmployeeId);
     }
-    return sales.filter((sale) => sale.employeeId === selectedEmployeeId);
-  }, [sales, selectedEmployeeId]);
+    
+    // Sort by employee name then by date (newest first)
+    return filtered.sort((a, b) => {
+      const employeeA = employees.find(e => e.id === a.employeeId);
+      const employeeB = employees.find(e => e.id === b.employeeId);
+      const nameA = employeeA ? `${employeeA.firstName} ${employeeA.lastName}` : '';
+      const nameB = employeeB ? `${employeeB.firstName} ${employeeB.lastName}` : '';
+
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+
+      // If names are equal, sort by date
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }, [sales, selectedEmployeeId, employees]);
+
 
   const salesByEmployeeChartData = React.useMemo(() => {
     const salesMap = new Map<
@@ -113,6 +128,7 @@ export function SalesReport({
     return customer ? `${customer.firstName} ${customer.lastName}`: 'N/A';
   }
 
+  let lastEmployeeId: string | null = null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -197,7 +213,7 @@ export function SalesReport({
             <TableHeader>
               <TableRow>
                 <TableHead>ID da Venda</TableHead>
-                <TableHead>Funcionário</TableHead>
+                {selectedEmployeeId === 'all' && <TableHead>Funcionário</TableHead>}
                 <TableHead>Cliente</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead>Data</TableHead>
@@ -207,35 +223,50 @@ export function SalesReport({
             </TableHeader>
             <TableBody>
               {filteredSales.length > 0 ? (
-                filteredSales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell>{getEmployeeName(sale.employeeId)}</TableCell>
-                    <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
-                    <TableCell>
-                      <ul>
-                        {sale.items.map((item, index) => {
-                          const part = parts.find((p) => p.id === item.partId);
-                          return (
-                            <li
-                              key={index}
-                              className="text-xs text-muted-foreground"
-                            >
-                              {item.quantity}x {part?.name || 'Peça não encontrada'}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </TableCell>
-                    <TableCell>{formatDate(sale.date)}</TableCell>
-                    <TableCell>
-                        <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(sale.total)}
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredSales.map((sale) => {
+                  const showEmployeeHeader = selectedEmployeeId === 'all' && sale.employeeId !== lastEmployeeId;
+                  if (showEmployeeHeader) {
+                    lastEmployeeId = sale.employeeId;
+                  }
+                  return (
+                    <React.Fragment key={sale.id}>
+                      {showEmployeeHeader && (
+                        <TableRow className="bg-muted/50 hover:bg-muted/50">
+                          <TableCell colSpan={7} className="font-bold text-primary">
+                            {getEmployeeName(sale.employeeId)}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      <TableRow>
+                        <TableCell className="font-medium">{sale.id}</TableCell>
+                        {selectedEmployeeId === 'all' && <TableCell>{getEmployeeName(sale.employeeId)}</TableCell>}
+                        <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
+                        <TableCell>
+                          <ul>
+                            {sale.items.map((item, index) => {
+                              const part = parts.find((p) => p.id === item.partId);
+                              return (
+                                <li
+                                  key={index}
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  {item.quantity}x {part?.name || 'Peça não encontrada'}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </TableCell>
+                        <TableCell>{formatDate(sale.date)}</TableCell>
+                        <TableCell>
+                            <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(sale.total)}
+                        </TableCell>
+                      </TableRow>
+                    </React.Fragment>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
