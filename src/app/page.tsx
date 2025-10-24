@@ -7,6 +7,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -63,6 +64,7 @@ export default function Home() {
   }, [recentSales]);
 
   const totalRevenue = useMemo(() => sales.reduce((acc, sale) => acc + sale.total, 0), [sales]);
+  const recentSalesTotal = useMemo(() => recentSales.reduce((acc, sale) => acc + sale.total, 0), [recentSales]);
   const totalParts = useMemo(() => parts.reduce((acc, part) => acc + part.stock, 0), [parts]);
 
   let lastEmployeeId: string | null = null;
@@ -181,6 +183,14 @@ export default function Home() {
                 </TableRow>
               )}
             </TableBody>
+            {recentSales.length > 0 && (
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={5} className="text-right font-bold">Total Geral</TableCell>
+                  <TableCell className="text-right font-bold">{formatCurrency(recentSalesTotal)}</TableCell>
+                </TableRow>
+              </TableFooter>
+            )}
           </Table>
         </CardContent>
       </Card>
