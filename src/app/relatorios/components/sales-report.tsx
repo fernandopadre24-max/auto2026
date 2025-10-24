@@ -33,6 +33,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +51,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -54,6 +60,8 @@ type SalesReportProps = {
   parts: Part[];
   customers: Customer[];
 };
+
+type ChartType = 'revenueByEmployee' | 'salesByEmployee' | 'revenueByCategory';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('pt-BR', {
@@ -81,6 +89,9 @@ const formatPaymentMethod = (sale: Sale) => {
     return sale.paymentMethod;
 }
 
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+
+
 export function SalesReport({
   sales,
   employees,
@@ -91,6 +102,7 @@ export function SalesReport({
   const { confirmPayment } = useData();
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('all');
   const [expandedEmployees, setExpandedEmployees] = React.useState<Set<string>>(new Set());
+  const [chartType, setChartType] = React.useState<ChartType>('revenueByEmployee');
 
   const handleConfirmPayment = (saleId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -148,31 +160,53 @@ export function SalesReport({
   }, [groupedSales]);
 
 
-  const salesByEmployeeChartData = React.useMemo(() => {
+  const chartData = React.useMemo(() => {
+    if (chartType === 'revenueByCategory') {
+        const categoryMap = new Map<string, number>();
+        sales.forEach(sale => {
+            if (sale.status === 'Pago') {
+                sale.items.forEach(item => {
+                    const part = parts.find(p => p.id === item.partId);
+                    if (part) {
+                        const currentTotal = categoryMap.get(part.category) || 0;
+                        categoryMap.set(part.category, currentTotal + (item.unitPrice * item.quantity - item.discount));
+                    }
+                });
+            }
+        });
+        return Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }));
+    }
+
     const salesMap = new Map<
       string,
-      { name: string; total: number; sales: number }
+      { name: string; totalRevenue: number; totalSales: number }
     >();
     employees.forEach((emp) => {
-      salesMap.set(emp.id, { name: `${emp.firstName} ${emp.lastName}`, total: 0, sales: 0 });
+      salesMap.set(emp.id, { name: `${emp.firstName} ${emp.lastName}`, totalRevenue: 0, totalSales: 0 });
     });
 
     sales.forEach((sale) => {
       const empData = salesMap.get(sale.employeeId);
-      if (empData && sale.status === 'Pago') {
-        empData.total += sale.total;
-        empData.sales += 1;
+      if (empData) {
+        if (sale.status === 'Pago') {
+            empData.totalRevenue += sale.total;
+        }
+        empData.totalSales += 1;
       }
     });
 
     return Array.from(salesMap.values());
-  }, [sales, employees]);
+  }, [sales, employees, parts, chartType]);
 
-  const totalRevenue = React.useMemo(() => {
+  const totalFilteredRevenue = React.useMemo(() => {
     return filteredSales.reduce((acc, sale) => acc + sale.total, 0);
   }, [filteredSales]);
 
-  const totalSales = filteredSales.length;
+  const grandTotalRevenue = React.useMemo(() => {
+    return sales.reduce((acc, sale) => acc + sale.total, 0);
+  }, [sales]);
+
+  const totalFilteredSales = filteredSales.length;
 
   const getEmployeeName = (employeeId: string) => {
     const employee = employees.find(e => e.id === employeeId);
@@ -186,53 +220,89 @@ export function SalesReport({
 
   const getHeaderColSpan = () => selectedEmployeeId === 'all' ? 5 : 4;
 
+  const renderChart = () => {
+    switch (chartType) {
+        case 'revenueByCategory':
+            return (
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Legend />
+                    </PieChart>
+                </ResponsiveContainer>
+            )
+        case 'salesByEmployee':
+            return (
+                 <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis label={{ value: 'Nº de Vendas', angle: -90, position: 'insideLeft' }}/>
+                        <Tooltip />
+                        <Bar dataKey="totalSales" fill="#82ca9d" name="Vendas" />
+                    </BarChart>
+                </ResponsiveContainer>
+            )
+        case 'revenueByEmployee':
+        default:
+            return (
+                 <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis label={{ value: 'Receita (R$)', angle: -90, position: 'insideLeft' }}/>
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Bar dataKey="totalRevenue" fill="#8884d8" name="Receita (Paga)" />
+                    </BarChart>
+                </ResponsiveContainer>
+            )
+    }
+  }
+
+  const getChartTitle = () => {
+    switch (chartType) {
+        case 'revenueByCategory': return 'Receita por Categoria de Peça (Vendas Pagas)';
+        case 'salesByEmployee': return 'Número de Vendas por Funcionário';
+        case 'revenueByEmployee':
+        default: return 'Desempenho por Funcionário (Vendas Pagas)';
+    }
+  }
+
 
   return (
     <div className="flex flex-col gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Desempenho por Funcionário (Vendas Pagas)</CardTitle>
-          <CardDescription>
-            Receita total e número de vendas por funcionário.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+             <div>
+                <CardTitle>{getChartTitle()}</CardTitle>
+                <CardDescription>
+                    Alterne entre as visualizações para analisar os dados de vendas.
+                </CardDescription>
+             </div>
+            <RadioGroup defaultValue="revenueByEmployee" onValueChange={(value: ChartType) => setChartType(value)} className="flex flex-row gap-2 sm:gap-4 border p-2 rounded-lg bg-muted/50">
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="revenueByEmployee" id="r1" />
+                    <Label htmlFor="r1">Receita</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="salesByEmployee" id="r2" />
+                    <Label htmlFor="r2">Vendas</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="revenueByCategory" id="r3" />
+                    <Label htmlFor="r3">Categoria</Label>
+                </div>
+            </RadioGroup>
+          </div>
         </CardHeader>
         <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={salesByEmployeeChartData}
-              margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis
-                yAxisId="left"
-                orientation="left"
-                stroke="#8884d8"
-                label={{
-                  value: 'Receita (R$)',
-                  angle: -90,
-                  position: 'insideLeft',
-                }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke="#82ca9d"
-                label={{
-                  value: 'Nº de Vendas',
-                  angle: -90,
-                  position: 'insideRight',
-                }}
-              />
-              <Tooltip
-                formatter={(value, name) =>
-                  name === 'total' ? formatCurrency(value as number) : value
-                }
-              />
-              <Bar yAxisId="left" dataKey="total" fill="#8884d8" name="Receita" />
-              <Bar yAxisId="right" dataKey="sales" fill="#82ca9d" name="Vendas" />
-            </BarChart>
-          </ResponsiveContainer>
+          {renderChart()}
         </CardContent>
       </Card>
       <Card className="bg-yellow-100 font-mono text-black border-yellow-200 shadow-lg">
@@ -241,8 +311,8 @@ export function SalesReport({
             <div>
               <CardTitle className="text-xl">Vendas Detalhadas</CardTitle>
               <CardDescription className="text-gray-700">
-                Exibindo {totalSales} vendas com uma receita total de{' '}
-                {formatCurrency(totalRevenue)}.
+                Exibindo {totalFilteredSales} vendas com um total de{' '}
+                {formatCurrency(totalFilteredRevenue)}.
               </CardDescription>
             </div>
             <div className="w-64">
@@ -280,7 +350,7 @@ export function SalesReport({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {totalSales > 0 ? (
+              {totalFilteredSales > 0 ? (
                 selectedEmployeeId !== 'all' ? (
                     filteredSales.map((sale) => (
                         <TableRow key={sale.id} className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50">
@@ -416,11 +486,15 @@ export function SalesReport({
                 </TableRow>
               )}
             </TableBody>
-             {totalSales > 0 && (
+             {totalFilteredSales > 0 && (
               <TableFooter>
                 <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
-                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 7} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
-                  <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(totalRevenue)}</TableCell>
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 6} className="text-right font-bold py-2 px-4">Total Filtrado</TableCell>
+                  <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(totalFilteredRevenue)}</TableCell>
+                </TableRow>
+                <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100 bg-yellow-50">
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 6} className="text-right font-extrabold py-2 px-4 text-blue-900">Total Geral (Todas as Vendas)</TableCell>
+                  <TableCell className="text-right font-extrabold py-2 px-4 text-blue-900">{formatCurrency(grandTotalRevenue)}</TableCell>
                 </TableRow>
               </TableFooter>
             )}
