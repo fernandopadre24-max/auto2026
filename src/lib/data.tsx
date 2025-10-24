@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import type { Part, Customer, Employee, Sale, StoreConfig } from './types';
+import type { Part, Customer, Employee, Sale, StoreConfig, Supplier } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Static Mock Data
@@ -71,6 +71,11 @@ const mockEmployees: Employee[] = [
   { id: '2', employeeCode: 'FUNC-002', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', address: 'Avenida do Sol, 456, Curitiba - PR', cpf: '555.666.777-88', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
 ];
 
+const mockSuppliers: Supplier[] = [
+    { id: '1', name: 'Distribuidora de Peças Brasil', cnpj: '12.345.678/0001-00', contactName: 'Ricardo Almeida', email: 'contato@distribuidorabrasil.com', phoneNumber: '1122334455', address: 'Rua dos Fornecedores, 100, São Paulo - SP', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: '2', name: 'Freios Master', cnpj: '98.765.432/0001-11', contactName: 'Sofia Costa', email: 'vendas@freiosmaster.com', phoneNumber: '4133445566', address: 'Avenida Industrial, 200, Curitiba - PR', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+];
+
 const mockSales: Sale[] = [
     { id: '1', employeeId: '1', customerId: '1', items: [{ partId: '1', quantity: 2, unitPrice: 25.00, discount: 0 }], total: 50.00, paymentMethod: 'Cartão', installments: 1, date: new Date().toISOString(), status: 'Pago' },
     { id: '2', employeeId: '1', customerId: '2', items: [{ partId: '2', quantity: 1, unitPrice: 95.00, discount: 10 }], total: 85.00, paymentMethod: 'PIX', installments: 1, date: new Date().toISOString(), status: 'Pago' },
@@ -116,6 +121,7 @@ interface DataContextProps {
   parts: Part[];
   customers: Customer[];
   employees: Employee[];
+  suppliers: Supplier[];
   sales: Sale[];
   config: StoreConfig;
   isLoading: boolean;
@@ -132,6 +138,9 @@ interface DataContextProps {
   addSale: (newSale: Omit<Sale, 'id'>) => void;
   confirmPayment: (saleId: string) => void;
   getPartById: (partId: string) => Part | undefined;
+  addSupplier: (newSupplierData: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateSupplier: (updatedSupplier: Supplier) => void;
+  deleteSupplier: (supplierId: string) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -141,6 +150,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [parts, setParts] = useLocalStorage('parts', mockParts);
   const [customers, setCustomers] = useLocalStorage('customers', mockCustomers);
   const [employees, setEmployees] = useLocalStorage('employees', mockEmployees);
+  const [suppliers, setSuppliers] = useLocalStorage('suppliers', mockSuppliers);
   const [sales, setSales] = useLocalStorage('sales', mockSales);
   const [config, setConfig] = useLocalStorage('config', mockConfig);
 
@@ -152,12 +162,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
             setParts(mockParts);
             setCustomers(mockCustomers);
             setEmployees(mockEmployees);
+            setSuppliers(mockSuppliers);
             setSales(mockSales);
             setConfig(mockConfig);
         }
         setIsLoading(false);
     }
-  }, [setParts, setCustomers, setEmployees, setSales, setConfig]);
+  }, [setParts, setCustomers, setEmployees, setSales, setConfig, setSuppliers]);
 
   const saveConfig = (newConfig: StoreConfig) => {
     setConfig(newConfig);
@@ -239,11 +250,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const getPartById = (partId: string) => {
     return parts.find(p => p.id === partId);
   }
+
+  const addSupplier = (newSupplierData: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newSupplier: Supplier = {
+      ...newSupplierData,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setSuppliers([...suppliers, newSupplier]);
+  };
+
+  const updateSupplier = (updatedSupplier: Supplier) => {
+    setSuppliers(suppliers.map(s => s.id === updatedSupplier.id ? { ...s, ...updatedSupplier, updatedAt: new Date().toISOString() } : s));
+  };
+
+  const deleteSupplier = (supplierId: string) => {
+    setSuppliers(suppliers.filter(s => s.id !== supplierId));
+  }
   
   const value = {
     parts,
     customers,
     employees,
+    suppliers,
     sales,
     config,
     isLoading,
@@ -260,6 +290,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addSale,
     confirmPayment,
     getPartById,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

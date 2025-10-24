@@ -278,6 +278,58 @@
         "quantity",
         "unitPrice"
       ]
+    },
+    "Supplier": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Supplier",
+      "type": "object",
+      "description": "Represents a supplier of auto parts.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the supplier."
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name of the supplier company."
+        },
+        "cnpj": {
+          "type": "string",
+          "description": "The CNPJ of the supplier."
+        },
+        "contactName": {
+          "type": "string",
+          "description": "The name of the primary contact person at the supplier."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the supplier.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the supplier."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the supplier."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the supplier was added.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of when the supplier was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email"
+      ]
     }
   },
   "auth": {
@@ -342,6 +394,22 @@
             {
               "name": "customerId",
               "description": "The unique identifier for the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/suppliers/{supplierId}",
+        "definition": {
+          "entityName": "Supplier",
+          "schema": {
+            "$ref": "#/backend/entities/Supplier"
+          },
+          "description": "Stores supplier information.",
+          "params": [
+            {
+              "name": "supplierId",
+              "description": "The unique identifier for the supplier."
             }
           ]
         }

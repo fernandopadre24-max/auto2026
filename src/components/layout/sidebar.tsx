@@ -20,6 +20,7 @@ import {
   Settings,
   Calculator,
   Calendar,
+  Truck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,6 +34,7 @@ const menuItems = [
   { href: '/pecas', label: 'Peças', icon: Wrench },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
+  { href: '/fornecedores', label: 'Fornecedores', icon: Truck },
   { href: '/relatorios', label: 'Relatórios', icon: BarChart2 },
   { href: '/calendario', label: 'Calendário', icon: Calendar },
   { href: '/calculadora', label: 'Calculadora', icon: Calculator },

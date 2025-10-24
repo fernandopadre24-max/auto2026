@@ -1,4 +1,5 @@
 
+
 export type Part = {
   id: string;
   name: string;
@@ -49,6 +50,18 @@ export type Employee = {
     createdAt: string;
     updatedAt: string;
 }
+
+export type Supplier = {
+    id: string;
+    name: string;
+    cnpj?: string;
+    contactName?: string;
+    email: string;
+    phoneNumber?: string;
+    address?: string;
+    createdAt: string;
+    updatedAt: string;
+};
 
 export type SaleItem = {
     partId: string;
