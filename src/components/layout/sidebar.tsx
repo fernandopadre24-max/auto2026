@@ -21,6 +21,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useData } from '@/lib/data';
 
 const menuItems = [
   { href: '/', label: 'Início', icon: Home },
@@ -35,6 +36,7 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const { config } = useData();
 
   return (
     <>
@@ -44,8 +46,8 @@ export function AppSidebar() {
             <Car className="h-5 w-5" />
           </div>
           {state === 'expanded' && (
-            <h1 className="text-xl font-semibold font-headline">
-              AutoParts
+            <h1 className="text-xl font-semibold font-headline truncate">
+              {config.storeName || 'AutoParts'}
             </h1>
           )}
           <div className="flex-1" />

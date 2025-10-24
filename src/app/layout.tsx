@@ -1,13 +1,24 @@
-import type { Metadata } from 'next';
+'use client';
 import './globals.css';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Toaster } from '@/components/ui/toaster';
-import { DataProvider } from '@/lib/data';
+import { DataProvider, useData } from '@/lib/data';
+import { useEffect } from 'react';
 
-export const metadata: Metadata = {
-  title: 'AutoParts Manager',
-  description: 'Sistema completo para gestão de loja de autopeças.',
-};
+function AppDynamicTitle() {
+  const { config } = useData();
+
+  useEffect(() => {
+    if (config.storeName) {
+      document.title = config.storeName;
+    } else {
+      document.title = 'AutoParts Manager';
+    }
+  }, [config.storeName]);
+
+  return null;
+}
+
 
 export default function RootLayout({
   children,
@@ -24,6 +35,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
           <DataProvider>
+            <AppDynamicTitle />
             <MainLayout>{children}</MainLayout>
           </DataProvider>
         <Toaster />

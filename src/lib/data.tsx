@@ -160,6 +160,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const saveConfig = (newConfig: StoreConfig) => {
     setConfig(newConfig);
+    if (newConfig.storeName) {
+      document.title = newConfig.storeName;
+    }
   };
 
   const addCustomer = (newCustomerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => {
