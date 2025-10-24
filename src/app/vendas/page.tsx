@@ -17,7 +17,6 @@ import type { Part, Customer, Employee, Sale } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { CustomerSearchDialog } from './components/customer-search-dialog';
-import { InstallmentsDialog } from './components/installments-dialog';
 import {
   FinalizeSaleDialog,
   type FinalizeSaleDetails,
@@ -55,10 +54,7 @@ export default function VendasPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
-  const [installments, setInstallments] = useState(1);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
-  const [isInstallmentsDialogOpen, setIsInstallmentsDialogOpen] =
-    useState(false);
   const [isFinalizeSaleDialogOpen, setIsFinalizeSaleDialogOpen] =
     useState(false);
   const [saleType, setSaleType] = useState<'prazo' | 'parcelado'>('prazo');
@@ -149,13 +145,17 @@ export default function VendasPage() {
         e.preventDefault();
         setIsCustomerDialogOpen(true);
       }
-      if (e.key === 'F10') {
-        e.preventDefault();
-        setIsInstallmentsDialogOpen(true);
-      }
       if (e.key === 'F11') {
         e.preventDefault();
         restoreLastSale();
+      }
+      if (e.key.toLowerCase() === 'f4') {
+        e.preventDefault();
+        handleOpenFinalizeDialog('prazo');
+      }
+      if (e.key.toLowerCase() === 'f5') {
+        e.preventDefault();
+        handleOpenFinalizeDialog('parcelado');
       }
     };
 
@@ -195,8 +195,7 @@ export default function VendasPage() {
   }, [cartItems]);
 
   const finishSale = (
-    paymentMethod: string,
-    details?: FinalizeSaleDetails
+    details: FinalizeSaleDetails
   ) => {
     if (cartItems.length === 0) {
       toast({
@@ -209,11 +208,9 @@ export default function VendasPage() {
 
     setLastSaleItems([...cartItems]);
 
-    const customerForSale = details?.customer || selectedCustomer;
-
     const saleData: Omit<Sale, 'id'> = {
       employeeId: authenticatedEmployee!.id,
-      customerId: customerForSale?.id || undefined,
+      customerId: details.customer.id,
       items: cartItems.map((item) => ({
         partId: item.part.id,
         quantity: item.quantity,
@@ -221,8 +218,8 @@ export default function VendasPage() {
         discount: item.discount,
       })),
       total: subtotal,
-      paymentMethod: details?.paymentMethod || paymentMethod as Sale['paymentMethod'],
-      installments: details?.installments || 1,
+      paymentMethod: details.paymentMethod,
+      installments: details.installments,
       date: new Date().toISOString(),
     };
 
@@ -230,16 +227,11 @@ export default function VendasPage() {
 
     let description = `Total de ${formatCurrency(
         subtotal
-    )} em ${totalItems} itens (${paymentMethod}).`;
+    )} em ${totalItems} itens.`;
 
-    if (customerForSale) {
-        description += ` Cliente: ${customerForSale.firstName} ${customerForSale.lastName}.`;
-    }
-
-    if (details) {
-        description += ` Pagamento: ${details.paymentMethod} em ${details.installments}x.`;
-    }
-
+    description += ` Cliente: ${details.customer.firstName} ${details.customer.lastName}.`;
+    description += ` Pagamento: ${details.paymentMethod}${details.installments > 1 ? ` em ${details.installments}x` : ''}.`;
+    
     toast({
         title: 'Venda Finalizada!',
         description: description,
@@ -265,7 +257,6 @@ export default function VendasPage() {
   const resetSaleState = () => {
     setCartItems([]);
     setSelectedCustomer(null);
-    setInstallments(1);
   };
 
   const cancelSale = () => {
@@ -335,19 +326,6 @@ export default function VendasPage() {
         }}
         customers={allCustomersData || []}
       />
-      <InstallmentsDialog
-        isOpen={isInstallmentsDialogOpen}
-        onOpenChange={setIsInstallmentsDialogOpen}
-        onConfirm={(count) => {
-          setInstallments(count);
-          toast({
-            title: 'Parcelas Definidas',
-            description: `Venda definida para ${count}x.`,
-          });
-          setIsInstallmentsDialogOpen(false);
-        }}
-        subtotal={subtotal}
-      />
       <FinalizeSaleDialog
         isOpen={isFinalizeSaleDialogOpen}
         onOpenChange={setIsFinalizeSaleDialogOpen}
@@ -355,7 +333,7 @@ export default function VendasPage() {
         customers={allCustomersData || []}
         saleType={saleType}
         onConfirm={(details) => {
-          finishSale(saleType, details);
+          finishSale(details);
           setIsFinalizeSaleDialogOpen(false);
         }}
       />
@@ -400,12 +378,12 @@ export default function VendasPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="UN">UN</SelectItem>
+                <SelectItem value="CX">CX</SelectItem>
                 <SelectItem value="PC">PC</SelectItem>
                 <SelectItem value="JG">JG</SelectItem>
                 <SelectItem value="KT">KT</SelectItem>
                 <SelectItem value="M">M</SelectItem>
                 <SelectItem value="KG">KG</SelectItem>
-                <SelectItem value="CX">CX</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -498,13 +476,6 @@ export default function VendasPage() {
                 <Button
                   size="sm"
                   className="bg-blue-500 text-white"
-                  onClick={() => setIsInstallmentsDialogOpen(true)}
-                >
-                  PARCELAS - F10
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-blue-500 text-white"
                   onClick={restoreLastSale}
                 >
                   ULT. VENDA - F11
@@ -574,12 +545,6 @@ export default function VendasPage() {
               <Card className="bg-blue-800 text-white">
                 <CardHeader className="p-2 text-center">
                   <CardTitle className="text-lg">VALOR TOTAL DA VENDA</CardTitle>
-                  {installments > 1 && (
-                    <p className="text-sm">
-                      ({installments}x de{' '}
-                      {formatCurrency(subtotal / installments)})
-                    </p>
-                  )}
                 </CardHeader>
                 <CardContent className="text-center">
                   <p className="text-5xl font-bold">
@@ -605,14 +570,8 @@ export default function VendasPage() {
                 />
               </div>
               <div className="space-y-2">
-                <ActionButton onClick={() => finishSale('Indefinido')}>
-                  FINALIZAR VENDA - F1
-                </ActionButton>
                 <ActionButton onClick={cancelSale}>
                   CANCELAR VENDA - F2
-                </ActionButton>
-                <ActionButton onClick={() => finishSale('À Vista')}>
-                  VENDER A VISTA - F3
                 </ActionButton>
                 <ActionButton onClick={() => handleOpenFinalizeDialog('prazo')}>
                   VENDER A PRAZO - F4

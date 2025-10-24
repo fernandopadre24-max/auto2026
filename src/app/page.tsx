@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/lib/data';
 import { useMemo } from 'react';
+import type { Sale } from '@/lib/types';
 
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -24,23 +25,15 @@ const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
+const formatPaymentMethod = (sale: Sale) => {
+    if (sale.installments > 1) {
+        return `${sale.paymentMethod} (${sale.installments}x)`;
+    }
+    return sale.paymentMethod;
+}
+
 export default function Home() {
   const { sales, parts, customers, employees } = useData();
-
-    const getStatusInfo = (sale: (typeof sales)[0]) => {
-        switch (sale.paymentMethod) {
-            case 'Cartão':
-            case 'PIX':
-            case 'Dinheiro':
-            case 'À Vista':
-                return { text: 'Pago', variant: 'default', className: 'bg-green-600' };
-            case 'Parcelado':
-            case 'Prazo':
-                return { text: 'Pendente', variant: 'secondary', className: '' };
-            default:
-                return { text: 'Pendente', variant: 'secondary', className: '' };
-        }
-    }
 
     const totalRevenue = useMemo(() => sales.reduce((acc, sale) => acc + sale.total, 0), [sales]);
     const totalParts = useMemo(() => parts.reduce((acc, part) => acc + part.stock, 0), [parts]);
@@ -127,7 +120,7 @@ export default function Home() {
                     <TableCell>{formatDate(sale.date)}</TableCell>
                     <TableCell>{employee ? `${employee.firstName} ${employee.lastName}` : 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{sale.paymentMethod}</Badge>
+                      <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
                     </TableCell>
                     <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                     </TableRow>

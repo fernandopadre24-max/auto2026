@@ -19,13 +19,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { Customer } from '@/lib/types';
+import type { Customer, Sale } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export type FinalizeSaleDetails = {
     customer: Customer;
     installments: number;
-    paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro';
+    paymentMethod: Sale['paymentMethod'];
 }
 
 type FinalizeSaleDialogProps = {
@@ -52,11 +52,17 @@ export function FinalizeSaleDialog({
   const { toast } = useToast();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [installments, setInstallments] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<'Cartão' | 'PIX' | 'Dinheiro'>('Cartão');
+  const [paymentMethod, setPaymentMethod] = useState<Sale['paymentMethod']>('Prazo');
   
   useEffect(() => {
-    if (saleType === 'prazo') {
-        setInstallments(1);
+    if (isOpen) {
+        if (saleType === 'prazo') {
+            setInstallments(1);
+            setPaymentMethod('Prazo')
+        } else {
+            setInstallments(1);
+            setPaymentMethod('Parcelado')
+        }
     }
   }, [saleType, isOpen]);
 
@@ -72,7 +78,8 @@ export function FinalizeSaleDialog({
         });
         return;
     }
-    onConfirm({ customer, installments, paymentMethod });
+    const finalPaymentMethod = saleType === 'parcelado' ? 'Parcelado' : 'Prazo';
+    onConfirm({ customer, installments, paymentMethod: finalPaymentMethod });
   }
 
   return (
@@ -81,7 +88,7 @@ export function FinalizeSaleDialog({
         <DialogHeader>
           <DialogTitle>Finalizar Venda {saleType === 'prazo' ? 'a Prazo' : 'Parcelada'}</DialogTitle>
           <DialogDescription>
-            Selecione o cliente, a forma de pagamento e as parcelas.
+            Selecione o cliente e as condições de pagamento.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
@@ -95,20 +102,6 @@ export function FinalizeSaleDialog({
                         {customers.map(customer => (
                             <SelectItem key={customer.id} value={customer.id}>{customer.firstName} {customer.lastName}</SelectItem>
                         ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="payment-method">Forma de Pagamento</Label>
-                <Select onValueChange={(value: 'Cartão' | 'PIX' | 'Dinheiro') => setPaymentMethod(value)} value={paymentMethod}>
-                    <SelectTrigger id="payment-method">
-                        <SelectValue placeholder="Selecione a forma de pagamento" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Cartão">Cartão</SelectItem>
-                        <SelectItem value="PIX">PIX</SelectItem>
-                        <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

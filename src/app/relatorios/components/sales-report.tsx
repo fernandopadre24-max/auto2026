@@ -34,6 +34,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { Sale, Employee, Part, Customer } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -53,6 +54,13 @@ const formatDate = (dateString: string) => {
   const date = new Date(dateString); // Use new Date() for ISO strings
   return date.toLocaleDateString('pt-BR');
 };
+
+const formatPaymentMethod = (sale: Sale) => {
+    if (sale.installments > 1) {
+        return `${sale.paymentMethod} (${sale.installments}x)`;
+    }
+    return sale.paymentMethod;
+}
 
 export function SalesReport({
   sales,
@@ -193,6 +201,7 @@ export function SalesReport({
                 <TableHead>Cliente</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>Pagamento</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -219,6 +228,9 @@ export function SalesReport({
                       </ul>
                     </TableCell>
                     <TableCell>{formatDate(sale.date)}</TableCell>
+                    <TableCell>
+                        <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(sale.total)}
                     </TableCell>
@@ -226,7 +238,7 @@ export function SalesReport({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     Nenhum resultado.
                   </TableCell>
                 </TableRow>
