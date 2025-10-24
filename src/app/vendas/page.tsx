@@ -262,6 +262,8 @@ export default function VendasPage() {
 
     setLastSaleItems([...cartItems]);
 
+    const saleStatus: Sale['status'] = details.paymentMethod === 'Prazo' ? 'Pendente' : 'Pago';
+
     const saleData: Omit<Sale, 'id'> = {
       employeeId: authenticatedEmployee!.id,
       customerId: details.customer.id,
@@ -277,6 +279,7 @@ export default function VendasPage() {
       date: new Date().toISOString(),
       dueDate: details.dueDate,
       termPaymentMethod: details.termPaymentMethod,
+      status: saleStatus,
     };
 
     addSale(saleData);

@@ -21,8 +21,8 @@ const mockEmployees: Employee[] = [
 ];
 
 const mockSales: Sale[] = [
-    { id: '1', employeeId: '1', customerId: '1', items: [{ partId: '1', quantity: 2, unitPrice: 25.00, discount: 0 }], total: 50.00, paymentMethod: 'Cartão', installments: 1, date: new Date().toISOString() },
-    { id: '2', employeeId: '1', customerId: '2', items: [{ partId: '2', quantity: 1, unitPrice: 95.00, discount: 10 }], total: 85.00, paymentMethod: 'PIX', installments: 1, date: new Date().toISOString() },
+    { id: '1', employeeId: '1', customerId: '1', items: [{ partId: '1', quantity: 2, unitPrice: 25.00, discount: 0 }], total: 50.00, paymentMethod: 'Cartão', installments: 1, date: new Date().toISOString(), status: 'Pago' },
+    { id: '2', employeeId: '1', customerId: '2', items: [{ partId: '2', quantity: 1, unitPrice: 95.00, discount: 10 }], total: 85.00, paymentMethod: 'PIX', installments: 1, date: new Date().toISOString(), status: 'Pago' },
 ];
 
 const mockConfig: StoreConfig = {

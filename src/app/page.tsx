@@ -68,7 +68,7 @@ export default function Home() {
     }, {} as Record<string, Sale[]>);
   }, [recentSales]);
 
-  const totalRevenue = useMemo(() => sales.reduce((acc, sale) => acc + sale.total, 0), [sales]);
+  const totalRevenue = useMemo(() => sales.filter(s => s.status === 'Pago').reduce((acc, sale) => acc + sale.total, 0), [sales]);
   const recentSalesTotal = useMemo(() => recentSales.reduce((acc, sale) => acc + sale.total, 0), [recentSales]);
   const totalParts = useMemo(() => parts.reduce((acc, part) => acc + part.stock, 0), [parts]);
 
@@ -132,6 +132,7 @@ export default function Home() {
                 <TableHead className="text-black">Itens</TableHead>
                 <TableHead className="text-black">Data</TableHead>
                 <TableHead className="text-black">Pagamento</TableHead>
+                <TableHead className="text-black">Status</TableHead>
                 <TableHead className="text-right text-black">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -152,7 +153,7 @@ export default function Home() {
                                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </Button>
                         </TableCell>
-                        <TableCell colSpan={4} className="font-bold text-blue-900 py-2 px-4">
+                        <TableCell colSpan={5} className="font-bold text-blue-900 py-2 px-4">
                             {employee ? `(${employee.employeeCode}) ${employee.firstName} ${employee.lastName}` : 'Funcionário Desconhecido'}
                         </TableCell>
                         <TableCell className="text-right font-bold text-blue-900 py-2 px-4">{formatCurrency(employeeSubtotal)}</TableCell>
@@ -178,6 +179,13 @@ export default function Home() {
                             <TableCell className="py-2 px-4">
                               <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
+                            <TableCell>
+                                <Badge className={cn({
+                                    'bg-green-200 text-green-800': sale.status === 'Pago',
+                                    'bg-red-200 text-red-800': sale.status === 'Cancelado',
+                                    'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
+                                })}>{sale.status}</Badge>
+                            </TableCell>
                             <TableCell className="text-right py-2 px-4">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                             </TableRow>
                         )
@@ -187,14 +195,14 @@ export default function Home() {
               })}
               {recentSales.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">Nenhuma venda recente.</TableCell>
+                  <TableCell colSpan={7} className="h-24 text-center">Nenhuma venda recente.</TableCell>
                 </TableRow>
               )}
             </TableBody>
             {recentSales.length > 0 && (
               <TableFooter>
                 <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
-                  <TableCell colSpan={5} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
+                  <TableCell colSpan={6} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
                   <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(recentSalesTotal)}</TableCell>
                 </TableRow>
               </TableFooter>

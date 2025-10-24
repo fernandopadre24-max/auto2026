@@ -38,6 +38,7 @@ import type { Sale, Employee, Part, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type SalesReportProps = {
   sales: Sale[];
@@ -139,7 +140,7 @@ export function SalesReport({
 
     sales.forEach((sale) => {
       const empData = salesMap.get(sale.employeeId);
-      if (empData) {
+      if (empData && sale.status === 'Pago') {
         empData.total += sale.total;
         empData.sales += 1;
       }
@@ -171,7 +172,7 @@ export function SalesReport({
     <div className="flex flex-col gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Desempenho por Funcionário</CardTitle>
+          <CardTitle>Desempenho por Funcionário (Vendas Pagas)</CardTitle>
           <CardDescription>
             Receita total e número de vendas por funcionário.
           </CardDescription>
@@ -255,6 +256,7 @@ export function SalesReport({
                 <TableHead className="text-black">Itens</TableHead>
                 <TableHead className="text-black">Data</TableHead>
                 <TableHead className="text-black">Pagamento</TableHead>
+                <TableHead className="text-black">Status</TableHead>
                 <TableHead className="text-right text-black">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -284,6 +286,13 @@ export function SalesReport({
                             <TableCell className="py-2 px-4">
                                 <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
+                             <TableCell>
+                                <Badge className={cn({
+                                    'bg-green-200 text-green-800': sale.status === 'Pago',
+                                    'bg-red-200 text-red-800': sale.status === 'Cancelado',
+                                    'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
+                                })}>{sale.status}</Badge>
+                            </TableCell>
                             <TableCell className="text-right py-2 px-4">
                             {formatCurrency(sale.total)}
                             </TableCell>
@@ -301,7 +310,7 @@ export function SalesReport({
                                             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                         </Button>
                                     </TableCell>
-                                    <TableCell colSpan={getHeaderColSpan() - 1} className="font-bold text-blue-900 py-2 px-4">
+                                    <TableCell colSpan={getHeaderColSpan() + 1} className="font-bold text-blue-900 py-2 px-4">
                                         {getEmployeeName(employeeId)}
                                     </TableCell>
                                     <TableCell className="text-right font-bold text-blue-900 py-2 px-4">
@@ -332,6 +341,13 @@ export function SalesReport({
                                         <TableCell className="py-2 px-4">
                                             <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                                         </TableCell>
+                                        <TableCell>
+                                            <Badge className={cn({
+                                                'bg-green-200 text-green-800': sale.status === 'Pago',
+                                                'bg-red-200 text-red-800': sale.status === 'Cancelado',
+                                                'bg-yellow-200 text-yellow-800': sale.status === 'Pendente',
+                                            })}>{sale.status}</Badge>
+                                        </TableCell>
                                         <TableCell className="text-right py-2 px-4">
                                         {formatCurrency(sale.total)}
                                         </TableCell>
@@ -343,7 +359,7 @@ export function SalesReport({
                 )
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     Nenhum resultado.
                   </TableCell>
                 </TableRow>
@@ -352,7 +368,7 @@ export function SalesReport({
              {totalSales > 0 && (
               <TableFooter>
                 <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
-                  <TableCell colSpan={selectedEmployeeId === 'all' ? 6 : 6} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 7 : 7} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
                   <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(totalRevenue)}</TableCell>
                 </TableRow>
               </TableFooter>
