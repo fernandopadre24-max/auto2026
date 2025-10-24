@@ -54,6 +54,8 @@ export type SaleItem = {
     discount: number;
 }
 
+export type TermPaymentMethod = 'Boleto' | 'Transferencia' | 'Cheque' | 'Outro';
+
 export type Sale = {
     id: string;
     employeeId: string;
@@ -63,6 +65,8 @@ export type Sale = {
     paymentMethod: 'Cartão' | 'PIX' | 'Dinheiro' | 'À Vista' | 'Prazo' | 'Parcelado' | 'Indefinido';
     installments: number;
     date: string;
+    dueDate?: string;
+    termPaymentMethod?: TermPaymentMethod;
 };
 
 export type StoreConfig = {

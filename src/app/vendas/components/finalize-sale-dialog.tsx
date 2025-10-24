@@ -19,13 +19,21 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { Customer, Sale } from '@/lib/types';
+import type { Customer, Sale, TermPaymentMethod } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export type FinalizeSaleDetails = {
     customer: Customer;
     installments: number;
     paymentMethod: Sale['paymentMethod'];
+    dueDate?: string;
+    termPaymentMethod?: TermPaymentMethod;
 }
 
 type FinalizeSaleDialogProps = {
@@ -53,12 +61,17 @@ export function FinalizeSaleDialog({
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [installments, setInstallments] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<Sale['paymentMethod']>('Prazo');
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [termPaymentMethod, setTermPaymentMethod] = useState<TermPaymentMethod>('Boleto');
   
   useEffect(() => {
     if (isOpen) {
+        setSelectedCustomerId(null);
         if (saleType === 'prazo') {
             setInstallments(1);
             setPaymentMethod('Prazo')
+            setDueDate(new Date(new Date().setDate(new Date().getDate() + 30))); // Default 30 days
+            setTermPaymentMethod('Boleto');
         } else {
             setInstallments(1);
             setPaymentMethod('Parcelado')
@@ -78,8 +91,24 @@ export function FinalizeSaleDialog({
         });
         return;
     }
+    
+    if (saleType === 'prazo' && !dueDate) {
+        toast({
+            variant: 'destructive',
+            title: 'Data de Vencimento',
+            description: 'Por favor, selecione uma data de vencimento.'
+        });
+        return;
+    }
+
     const finalPaymentMethod = saleType === 'parcelado' ? 'Parcelado' : 'Prazo';
-    onConfirm({ customer, installments, paymentMethod: finalPaymentMethod });
+    onConfirm({ 
+        customer, 
+        installments, 
+        paymentMethod: finalPaymentMethod,
+        dueDate: saleType === 'prazo' ? dueDate?.toISOString() : undefined,
+        termPaymentMethod: saleType === 'prazo' ? termPaymentMethod : undefined,
+     });
   }
 
   return (
@@ -123,6 +152,50 @@ export function FinalizeSaleDialog({
                     )}
                 </div>
             )}
+             {saleType === 'prazo' && (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="dueDate">Data de Vencimento</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !dueDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dueDate ? format(dueDate, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={dueDate}
+                                    onSelect={setDueDate}
+                                    initialFocus
+                                    locale={ptBR}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="termPaymentMethod">Forma de Pagamento</Label>
+                        <Select onValueChange={(value) => setTermPaymentMethod(value as TermPaymentMethod)} value={termPaymentMethod}>
+                            <SelectTrigger id="termPaymentMethod">
+                                <SelectValue placeholder="Selecione a forma de pagamento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Boleto">Boleto Bancário</SelectItem>
+                                <SelectItem value="Transferencia">Transferência Bancária</SelectItem>
+                                <SelectItem value="Cheque">Cheque</SelectItem>
+                                <SelectItem value="Outro">Outro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+             )}
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

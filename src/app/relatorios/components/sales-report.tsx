@@ -53,7 +53,8 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString); // Use new Date() for ISO strings
   return date.toLocaleDateString('pt-BR');
 };
@@ -64,6 +65,9 @@ const formatPaymentMethod = (sale: Sale) => {
     }
      if (sale.paymentMethod === 'Cartão' && sale.installments > 1) {
         return `Cartão em ${sale.installments}x`;
+    }
+    if (sale.paymentMethod === 'Prazo') {
+      return `${sale.termPaymentMethod} (Vence: ${formatDate(sale.dueDate)})`;
     }
     return sale.paymentMethod;
 }

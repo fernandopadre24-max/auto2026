@@ -275,6 +275,8 @@ export default function VendasPage() {
       paymentMethod: details.paymentMethod,
       installments: details.installments,
       date: new Date().toISOString(),
+      dueDate: details.dueDate,
+      termPaymentMethod: details.termPaymentMethod,
     };
 
     addSale(saleData);
