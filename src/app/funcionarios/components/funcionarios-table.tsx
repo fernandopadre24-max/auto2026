@@ -75,6 +75,10 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
       header: 'Cargo',
     },
     {
+      accessorKey: 'address',
+      header: 'Endereço',
+    },
+    {
       id: 'actions',
       header: () => <div className="text-center">Ações</div>,
       cell: ({ row }) => {

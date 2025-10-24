@@ -41,7 +41,9 @@ export type Employee = {
     firstName: string;
     lastName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber?: string;
+    address?: string;
+    cpf?: string;
     role: string;
     createdAt: string;
     updatedAt: string;

@@ -66,8 +66,8 @@ const mockCustomers: Customer[] = [
 ];
 
 const mockEmployees: Employee[] = [
-  { id: '1', employeeCode: 'FUNC-001', firstName: 'Carlos', lastName: 'Pereira', email: 'carlos.p@email.com', phoneNumber: '31977776666', role: 'Vendedor', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', employeeCode: 'FUNC-002', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', employeeCode: 'FUNC-001', firstName: 'Carlos', lastName: 'Pereira', email: 'carlos.p@email.com', phoneNumber: '31977776666', role: 'Vendedor', address: 'Rua das Flores, 123', cpf: '111.222.333-44', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '2', employeeCode: 'FUNC-002', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', address: 'Avenida do Sol, 456', cpf: '555.666.777-88', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
 ];
 
 const mockSales: Sale[] = [
@@ -156,7 +156,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
         setIsLoading(false);
     }
-  }, []);
+  }, [setParts, setCustomers, setEmployees, setSales, setConfig]);
 
   const saveConfig = (newConfig: StoreConfig) => {
     setConfig(newConfig);

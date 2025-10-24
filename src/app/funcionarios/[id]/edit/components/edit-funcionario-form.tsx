@@ -30,6 +30,8 @@ const formSchema = z.object({
     .min(2, { message: 'O sobrenome deve ter pelo menos 2 caracteres.' }),
   email: z.string().email({ message: 'Insira um email válido.' }),
   phoneNumber: z.string().optional(),
+  address: z.string().optional(),
+  cpf: z.string().optional(),
   role: z.string().min(2, { message: 'O cargo é obrigatório.' }),
 });
 
@@ -61,6 +63,8 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
       lastName: '',
       email: '',
       phoneNumber: '',
+      address: '',
+      cpf: '',
       role: '',
     },
   });
@@ -78,6 +82,8 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
         ...employee,
         ...values,
         phoneNumber: values.phoneNumber || '',
+        address: values.address || '',
+        cpf: values.cpf || '',
       });
       toast({
         title: 'Sucesso!',
@@ -182,6 +188,34 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="cpf"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CPF</FormLabel>
+                <FormControl>
+                  <Input placeholder="000.000.000-00" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="md:col-span-2">
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
         <div className="flex justify-end gap-4">
           <Button

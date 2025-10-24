@@ -107,6 +107,14 @@
           "type": "string",
           "description": "Phone number of the employee."
         },
+        "address": {
+          "type": "string",
+          "description": "Address of the employee."
+        },
+        "cpf": {
+          "type": "string",
+          "description": "CPF of the employee."
+        },
         "role": {
           "type": "string",
           "description": "Role of the employee (e.g., manager, sales representative)."
