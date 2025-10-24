@@ -1,3 +1,4 @@
+
 export type Part = {
   id: string;
   name: string;
@@ -29,8 +30,8 @@ export type Customer = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
 };
