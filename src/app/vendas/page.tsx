@@ -262,7 +262,7 @@ export default function VendasPage() {
 
     setLastSaleItems([...cartItems]);
 
-    const saleStatus: Sale['status'] = details.paymentMethod === 'Prazo' ? 'Pendente' : 'Pago';
+    const saleStatus: Sale['status'] = details.paymentMethod === 'Prazo' || details.paymentMethod === 'Parcelado' ? 'Pendente' : 'Pago';
 
     const saleData: Omit<Sale, 'id'> = {
       employeeId: authenticatedEmployee!.id,
