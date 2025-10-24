@@ -13,6 +13,7 @@ const mockParts: Part[] = [
 const mockCustomers: Customer[] = [
   { id: '1', firstName: 'João', lastName: 'Silva', email: 'joao.silva@email.com', phoneNumber: '11999998888', address: 'Rua A, 123', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
   { id: '2', firstName: 'Maria', lastName: 'Santos', email: 'maria.santos@email.com', phoneNumber: '21988887777', address: 'Av B, 456', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 'default', firstName: 'Consumidor', lastName: 'Final', email: 'consumidor@final.com', phoneNumber: '', address: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 ];
 
 const mockEmployees: Employee[] = [
@@ -30,6 +31,34 @@ const mockConfig: StoreConfig = {
   cnpj: '12.345.678/0001-99',
   address: 'Rua Principal, 123, Centro',
   phone: '(11) 98765-4321'
+};
+
+const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => void] => {
+    const [storedValue, setStoredValue] = useState<T>(() => {
+        if (typeof window === 'undefined') {
+            return initialValue;
+        }
+        try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+            console.error(error);
+            return initialValue;
+        }
+    });
+
+    const setValue = (value: T) => {
+        try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            if (typeof window !== 'undefined') {
+                window.localStorage.setItem(key, JSON.stringify(valueToStore));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    return [storedValue, setValue];
 };
 
 
@@ -55,18 +84,25 @@ const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [parts, setParts] = useState(mockParts);
-  const [customers, setCustomers] = useState(mockCustomers);
-  const [employees, setEmployees] = useState(mockEmployees);
-  const [sales, setSales] = useState(mockSales);
-  const [config, setConfig] = useState(mockConfig);
+  const [parts, setParts] = useLocalStorage('parts', mockParts);
+  const [customers, setCustomers] = useLocalStorage('customers', mockCustomers);
+  const [employees, setEmployees] = useLocalStorage('employees', mockEmployees);
+  const [sales, setSales] = useLocalStorage('sales', mockSales);
+  const [config, setConfig] = useLocalStorage('config', mockConfig);
 
-  // Simulate data fetching
+  // Simulate data fetching and check if localStorage is initialized
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500); // Simulate a short loading delay
-    return () => clearTimeout(timer);
+    if (typeof window !== 'undefined') {
+        const storedParts = window.localStorage.getItem('parts');
+        if (!storedParts) {
+            setParts(mockParts);
+            setCustomers(mockCustomers);
+            setEmployees(mockEmployees);
+            setSales(mockSales);
+            setConfig(mockConfig);
+        }
+        setIsLoading(false);
+    }
   }, []);
 
   const saveConfig = (newConfig: StoreConfig) => {
@@ -80,7 +116,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setCustomers(prev => [...prev, newCustomer]);
+    setCustomers([...customers, newCustomer]);
   };
 
   const updateCustomer = (updatedCustomer: Customer) => {
@@ -95,7 +131,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setEmployees(prev => [...prev, newEmployee]);
+    setEmployees([...employees, newEmployee]);
   };
 
   const updateEmployee = (updatedEmployee: Employee) => {
@@ -107,7 +143,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ...newPartData,
       id: uuidv4(),
     };
-    setParts(prev => [...prev, newPart]);
+    setParts([...parts, newPart]);
   }
 
   const updatePart = (updatedPart: Part) => {
@@ -119,7 +155,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ...newSaleData,
         id: uuidv4(),
     };
-    setSales(prev => [newSale, ...prev]);
+    setSales([newSale, ...sales]);
   }
 
   const confirmPayment = (saleId: string) => {
