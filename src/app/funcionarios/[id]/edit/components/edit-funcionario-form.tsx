@@ -106,6 +106,13 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FormItem>
+            <FormLabel>Código do Funcionário</FormLabel>
+            <FormControl>
+              <Input value={employee.employeeCode} readOnly disabled />
+            </FormControl>
+          </FormItem>
+          <div />
           <FormField
             control={form.control}
             name="firstName"

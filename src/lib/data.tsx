@@ -16,8 +16,8 @@ const mockCustomers: Customer[] = [
 ];
 
 const mockEmployees: Employee[] = [
-  { id: '1', firstName: 'Carlos', lastName: 'Pereira', email: 'carlos.p@email.com', phoneNumber: '31977776666', role: 'Vendedor', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '1', employeeCode: 'FUNC-001', firstName: 'Carlos', lastName: 'Pereira', email: 'carlos.p@email.com', phoneNumber: '31977776666', role: 'Vendedor', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '2', employeeCode: 'FUNC-002', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
 ];
 
 const mockSales: Sale[] = [
@@ -44,7 +44,7 @@ interface DataContextProps {
   updateCustomer: (updatedCustomer: Customer) => void;
   addCustomer: (newCustomer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateEmployee: (updatedEmployee: Employee) => void;
-  addEmployee: (newEmployee: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  addEmployee: (newEmployee: Omit<Employee, 'id' | 'createdAt' | 'updatedAt' | 'employeeCode'>) => void;
   updatePart: (updatedPart: Part) => void;
   addPart: (newPart: Omit<Part, 'id'>) => void;
   addSale: (newSale: Omit<Sale, 'id'>) => void;
@@ -86,10 +86,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setCustomers(customers.map(c => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer, updatedAt: new Date().toISOString() } : c));
   };
   
-  const addEmployee = (newEmployeeData: Omit<Employee, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addEmployee = (newEmployeeData: Omit<Employee, 'id' | 'createdAt' | 'updatedAt' | 'employeeCode'>) => {
     const newEmployee: Employee = {
       ...newEmployeeData,
       id: uuidv4(),
+      employeeCode: `FUNC-${Date.now().toString().slice(-6)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

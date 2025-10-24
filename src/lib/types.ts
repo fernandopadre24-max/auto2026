@@ -37,6 +37,7 @@ export type Customer = {
 
 export type Employee = {
     id: string;
+    employeeCode: string;
     firstName: string;
     lastName: string;
     email: string;

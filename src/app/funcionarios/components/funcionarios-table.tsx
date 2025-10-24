@@ -32,6 +32,10 @@ type FuncionariosTableProps = {
 
 export const columns: ColumnDef<Employee>[] = [
   {
+    accessorKey: 'employeeCode',
+    header: 'Código',
+  },
+  {
     accessorKey: 'firstName',
     header: 'Nome',
     cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,

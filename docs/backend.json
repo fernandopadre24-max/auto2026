@@ -86,6 +86,10 @@
           "type": "string",
           "description": "Unique identifier for the employee."
         },
+        "employeeCode": {
+          "type": "string",
+          "description": "Unique, auto-generated code for the employee."
+        },
         "firstName": {
           "type": "string",
           "description": "First name of the employee."
@@ -120,6 +124,7 @@
       },
       "required": [
         "id",
+        "employeeCode",
         "firstName",
         "lastName",
         "email",
