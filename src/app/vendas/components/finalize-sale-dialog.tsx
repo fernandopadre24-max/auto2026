@@ -34,6 +34,8 @@ export type FinalizeSaleDetails = {
     paymentMethod: Sale['paymentMethod'];
     dueDate?: string;
     termPaymentMethod?: TermPaymentMethod;
+    customerCPF?: string;
+    cardNumber?: string;
 }
 
 type FinalizeSaleDialogProps = {
@@ -63,10 +65,14 @@ export function FinalizeSaleDialog({
   const [paymentMethod, setPaymentMethod] = useState<Sale['paymentMethod']>('Prazo');
   const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
   const [termPaymentMethod, setTermPaymentMethod] = useState<TermPaymentMethod>('Boleto');
+  const [customerCPF, setCustomerCPF] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
   
   useEffect(() => {
     if (isOpen) {
         setSelectedCustomerId(null);
+        setCustomerCPF('');
+        setCardNumber('');
         if (saleType === 'prazo') {
             setInstallments(1);
             setPaymentMethod('Prazo')
@@ -101,6 +107,15 @@ export function FinalizeSaleDialog({
         return;
     }
 
+    if (saleType === 'parcelado' && (!customerCPF || !cardNumber)) {
+         toast({
+            variant: 'destructive',
+            title: 'Campos Obrigatórios',
+            description: 'CPF e número do cartão são obrigatórios para venda parcelada.'
+        });
+        return;
+    }
+
     const finalPaymentMethod = saleType === 'parcelado' ? 'Parcelado' : 'Prazo';
     onConfirm({ 
         customer, 
@@ -108,6 +123,8 @@ export function FinalizeSaleDialog({
         paymentMethod: finalPaymentMethod,
         dueDate: saleType === 'prazo' ? dueDate?.toISOString() : undefined,
         termPaymentMethod: saleType === 'prazo' ? termPaymentMethod : undefined,
+        customerCPF: saleType === 'parcelado' ? customerCPF : undefined,
+        cardNumber: saleType === 'parcelado' ? cardNumber : undefined,
      });
   }
 
@@ -136,21 +153,42 @@ export function FinalizeSaleDialog({
             </div>
           
             {saleType === 'parcelado' && (
-                <div className="grid gap-2">
-                    <Label htmlFor="installments">Nº de Parcelas</Label>
-                    <Input
-                    id="installments"
-                    type="number"
-                    value={installments}
-                    onChange={(e) => setInstallments(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    min="1"
-                    />
-                    {installments > 1 && (
-                        <p className="text-sm text-center text-muted-foreground mt-2">
-                            {installments}x de {formatCurrency(installmentValue)}
-                        </p>
-                    )}
-                </div>
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="customer-cpf">CPF do Cliente</Label>
+                        <Input
+                        id="customer-cpf"
+                        value={customerCPF}
+                        onChange={(e) => setCustomerCPF(e.target.value)}
+                        placeholder="000.000.000-00"
+                        />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="card-number">4 Últimos Dígitos do Cartão</Label>
+                        <Input
+                        id="card-number"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        placeholder="1234"
+                        maxLength={4}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="installments">Nº de Parcelas</Label>
+                        <Input
+                        id="installments"
+                        type="number"
+                        value={installments}
+                        onChange={(e) => setInstallments(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                        min="1"
+                        />
+                        {installments > 1 && (
+                            <p className="text-sm text-center text-muted-foreground mt-2">
+                                {installments}x de {formatCurrency(installmentValue)}
+                            </p>
+                        )}
+                    </div>
+                </>
             )}
              {saleType === 'prazo' && (
                 <>

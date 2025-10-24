@@ -68,6 +68,8 @@ export type Sale = {
     dueDate?: string;
     termPaymentMethod?: TermPaymentMethod;
     status: 'Pago' | 'Pendente' | 'Cancelado';
+    customerCPF?: string;
+    cardNumber?: string;
 };
 
 export type StoreConfig = {

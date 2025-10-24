@@ -280,6 +280,8 @@ export default function VendasPage() {
       dueDate: details.dueDate,
       termPaymentMethod: details.termPaymentMethod,
       status: saleStatus,
+      customerCPF: details.customerCPF,
+      cardNumber: details.cardNumber,
     };
 
     addSale(saleData);
