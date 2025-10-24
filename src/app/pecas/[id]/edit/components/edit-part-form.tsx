@@ -145,7 +145,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
         category: values.partCategory,
         unit: values.unit,
         manufacturer: values.manufacturer,
-        supplierId: values.supplierId,
+        supplierId: values.supplierId === 'none' ? undefined : values.supplierId,
         vehicleModel: values.model,
         vehicleYear: Number(values.year),
         condition: values.condition,
@@ -323,7 +323,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {suppliers.map(supplier => (
                       <SelectItem key={supplier.id} value={supplier.id}>{supplier.name}</SelectItem>
                     ))}
