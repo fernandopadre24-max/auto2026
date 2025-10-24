@@ -25,61 +25,82 @@ import {
 } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useData } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 
 type ClientesTableProps = {
   data: Customer[];
 };
 
-export const columns: ColumnDef<Customer>[] = [
-  {
-    accessorKey: 'firstName',
-    header: 'Nome',
-    cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-  },
-  {
-    accessorKey: 'phoneNumber',
-    header: 'Telefone',
-  },
-  {
-    accessorKey: 'address',
-    header: 'Endereço',
-  },
-  {
-    id: 'actions',
-    header: () => <div className="text-center">Ações</div>,
-    cell: ({ row }) => {
-      const customer = row.original;
-      return (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <Link href={`/clientes/${customer.id}/edit`}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Editar</span>
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-red-500 hover:text-red-600"
-            onClick={() => console.log('delete', customer.id)}
-          >
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only">Excluir</span>
-          </Button>
-        </div>
-      );
-    },
-  },
-];
-
 export function ClientesTable({ data }: ClientesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
+    const { deleteCustomer } = useData();
+    const { toast } = useToast();
+    const [customerToDelete, setCustomerToDelete] = React.useState<Customer | null>(null);
+
+  const handleDelete = (customer: Customer) => {
+    setCustomerToDelete(customer);
+  };
+
+  const confirmDelete = () => {
+    if (customerToDelete) {
+      deleteCustomer(customerToDelete.id);
+      toast({
+        title: 'Cliente Excluído',
+        description: `O cliente "${customerToDelete.firstName} ${customerToDelete.lastName}" foi excluído com sucesso.`,
+      });
+      setCustomerToDelete(null);
+    }
+  };
+
+  const columns: ColumnDef<Customer>[] = [
+    {
+      accessorKey: 'firstName',
+      header: 'Nome',
+      cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+    },
+    {
+      accessorKey: 'phoneNumber',
+      header: 'Telefone',
+    },
+    {
+      accessorKey: 'address',
+      header: 'Endereço',
+    },
+    {
+      id: 'actions',
+      header: () => <div className="text-center">Ações</div>,
+      cell: ({ row }) => {
+        const customer = row.original;
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/clientes/${customer.id}/edit`}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Editar</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600"
+              onClick={() => handleDelete(customer)}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Excluir</span>
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
 
   const table = useReactTable({
     data,
@@ -97,6 +118,14 @@ export function ClientesTable({ data }: ClientesTableProps) {
   });
 
   return (
+    <>
+     <DeleteConfirmationDialog
+        isOpen={!!customerToDelete}
+        onOpenChange={() => setCustomerToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={`${customerToDelete?.firstName} ${customerToDelete?.lastName}`}
+        itemType="cliente"
+      />
     <div className="flex flex-col gap-4">
       <div className="flex items-center">
         <Input
@@ -177,5 +206,6 @@ export function ClientesTable({ data }: ClientesTableProps) {
         </Button>
       </div>
     </div>
+    </>
   );
 }

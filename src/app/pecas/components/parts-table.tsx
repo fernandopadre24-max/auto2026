@@ -27,6 +27,9 @@ import {
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useData } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 
 type PartsTableProps = {
   data: Part[];
@@ -43,9 +46,27 @@ export function PartsTable({ data }: PartsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const router = useRouter();
+  const { deletePart } = useData();
+  const { toast } = useToast();
+  const [partToDelete, setPartToDelete] = React.useState<Part | null>(null);
 
   const handleDuplicate = (partId: string) => {
     router.push(`/pecas/add?duplicateId=${partId}`);
+  };
+
+  const handleDelete = (part: Part) => {
+    setPartToDelete(part);
+  };
+
+  const confirmDelete = () => {
+    if (partToDelete) {
+      deletePart(partToDelete.id);
+      toast({
+        title: 'Peça Excluída',
+        description: `A peça "${partToDelete.name}" foi excluída com sucesso.`,
+      });
+      setPartToDelete(null);
+    }
   };
 
   const columns: ColumnDef<Part>[] = [
@@ -107,7 +128,7 @@ export function PartsTable({ data }: PartsTableProps) {
                 <span className="sr-only">Editar</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => handleDelete(part)}>
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Excluir</span>
             </Button>
@@ -133,6 +154,14 @@ export function PartsTable({ data }: PartsTableProps) {
   });
 
   return (
+    <>
+    <DeleteConfirmationDialog
+        isOpen={!!partToDelete}
+        onOpenChange={() => setPartToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={partToDelete?.name || ''}
+        itemType="peça"
+      />
     <div className="flex flex-col gap-4">
       <div className="flex items-center">
         <Input
@@ -213,7 +242,6 @@ export function PartsTable({ data }: PartsTableProps) {
         </Button>
       </div>
     </div>
+    </>
   );
 }
-
-    

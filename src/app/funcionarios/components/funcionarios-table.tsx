@@ -25,60 +25,82 @@ import {
 } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useData } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 
 type FuncionariosTableProps = {
   data: Employee[];
 };
 
-export const columns: ColumnDef<Employee>[] = [
-  {
-    accessorKey: 'employeeCode',
-    header: 'Código',
-  },
-  {
-    accessorKey: 'firstName',
-    header: 'Nome',
-    cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-  },
-  {
-    accessorKey: 'role',
-    header: 'Cargo',
-  },
-  {
-    id: 'actions',
-    header: () => <div className="text-center">Ações</div>,
-    cell: ({ row }) => {
-      const employee = row.original;
-      return (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <Link href={`/funcionarios/${employee.id}/edit`}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Editar</span>
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-red-500 hover:text-red-600"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only">Demitir</span>
-          </Button>
-        </div>
-      );
-    },
-  },
-];
-
 export function FuncionariosTable({ data }: FuncionariosTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
+  const { deleteEmployee } = useData();
+  const { toast } = useToast();
+  const [employeeToDelete, setEmployeeToDelete] = React.useState<Employee | null>(null);
+
+  const handleDelete = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+  };
+
+  const confirmDelete = () => {
+    if (employeeToDelete) {
+      deleteEmployee(employeeToDelete.id);
+      toast({
+        title: 'Funcionário Demitido',
+        description: `O funcionário "${employeeToDelete.firstName} ${employeeToDelete.lastName}" foi removido do sistema.`,
+      });
+      setEmployeeToDelete(null);
+    }
+  };
+
+  const columns: ColumnDef<Employee>[] = [
+    {
+      accessorKey: 'employeeCode',
+      header: 'Código',
+    },
+    {
+      accessorKey: 'firstName',
+      header: 'Nome',
+      cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+    },
+    {
+      accessorKey: 'role',
+      header: 'Cargo',
+    },
+    {
+      id: 'actions',
+      header: () => <div className="text-center">Ações</div>,
+      cell: ({ row }) => {
+        const employee = row.original;
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/funcionarios/${employee.id}/edit`}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Editar</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600"
+              onClick={() => handleDelete(employee)}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Demitir</span>
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
 
   const table = useReactTable({
     data,
@@ -96,87 +118,97 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center">
-        <Input
-          placeholder="Filtrar por nome..."
-          value={
-            (table.getColumn('firstName')?.getFilterValue() as string) ?? ''
-          }
-          onChange={(event) =>
-            table.getColumn('firstName')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+    <>
+      <DeleteConfirmationDialog
+        isOpen={!!employeeToDelete}
+        onOpenChange={() => setEmployeeToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={`${employeeToDelete?.firstName} ${employeeToDelete?.lastName}`}
+        itemType="funcionário"
+        actionName="Demitir"
+      />
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center">
+          <Input
+            placeholder="Filtrar por nome..."
+            value={
+              (table.getColumn('firstName')?.getFilterValue() as string) ?? ''
+            }
+            onChange={(event) =>
+              table.getColumn('firstName')?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Nenhum resultado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Nenhum resultado.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Próximo
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Anterior
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Próximo
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }

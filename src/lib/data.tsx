@@ -72,10 +72,13 @@ interface DataContextProps {
   saveConfig: (newConfig: StoreConfig) => void;
   updateCustomer: (updatedCustomer: Customer) => void;
   addCustomer: (newCustomer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  deleteCustomer: (customerId: string) => void;
   updateEmployee: (updatedEmployee: Employee) => void;
   addEmployee: (newEmployee: Omit<Employee, 'id' | 'createdAt' | 'updatedAt' | 'employeeCode'>) => void;
+  deleteEmployee: (employeeId: string) => void;
   updatePart: (updatedPart: Part) => void;
   addPart: (newPart: Omit<Part, 'id' | 'sku'>) => void;
+  deletePart: (partId: string) => void;
   addSale: (newSale: Omit<Sale, 'id'>) => void;
   confirmPayment: (saleId: string) => void;
   getPartById: (partId: string) => Part | undefined;
@@ -123,6 +126,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateCustomer = (updatedCustomer: Customer) => {
     setCustomers(customers.map(c => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer, updatedAt: new Date().toISOString() } : c));
   };
+
+  const deleteCustomer = (customerId: string) => {
+    setCustomers(customers.filter(c => c.id !== customerId));
+  }
   
   const addEmployee = (newEmployeeData: Omit<Employee, 'id' | 'createdAt' | 'updatedAt' | 'employeeCode'>) => {
     const newEmployee: Employee = {
@@ -139,6 +146,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setEmployees(employees.map(e => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee, updatedAt: new Date().toISOString() } : e));
   };
 
+  const deleteEmployee = (employeeId: string) => {
+    setEmployees(employees.filter(e => e.id !== employeeId));
+  }
+
   const addPart = (newPartData: Omit<Part, 'id' | 'sku'>) => {
     const newPart: Part = {
       ...newPartData,
@@ -150,6 +161,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updatePart = (updatedPart: Part) => {
     setParts(parts.map(p => p.id === updatedPart.id ? { ...p, ...updatedPart } : p));
+  }
+
+  const deletePart = (partId: string) => {
+    setParts(parts.filter(p => p.id !== partId));
   }
 
   const addSale = (newSaleData: Omit<Sale, 'id'>) => {
@@ -182,10 +197,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveConfig,
     updateCustomer,
     addCustomer,
+    deleteCustomer,
     updateEmployee,
     addEmployee,
+    deleteEmployee,
     updatePart,
     addPart,
+    deletePart,
     addSale,
     confirmPayment,
     getPartById,
@@ -201,5 +219,3 @@ export function useData() {
   }
   return context;
 }
-
-    
