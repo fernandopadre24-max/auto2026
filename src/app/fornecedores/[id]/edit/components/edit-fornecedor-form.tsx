@@ -24,10 +24,10 @@ import { formatPhoneNumber } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+  cnpj: z.string().optional(),
   contactName: z.string().optional(),
   email: z.string().email({ message: 'Insira um email válido.' }),
   phoneNumber: z.string().optional(),
-  cnpj: z.string().optional(),
   address: z.string().optional(),
 });
 
@@ -56,10 +56,10 @@ export function EditFornecedorForm({ supplierId }: EditFornecedorFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      cnpj: '',
       contactName: '',
       email: '',
       phoneNumber: '',
-      cnpj: '',
       address: '',
     },
   });
@@ -126,7 +126,7 @@ export function EditFornecedorForm({ supplierId }: EditFornecedorFormProps) {
             name="cnpj"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CNPJ</FormLabel>
+                <FormLabel>CNPJ / CPF</FormLabel>
                 <FormControl>
                   <Input placeholder="00.000.000/0001-00" {...field} value={field.value || ''} />
                 </FormControl>

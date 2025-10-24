@@ -63,6 +63,10 @@ export function FornecedoresTable({ data }: FornecedoresTableProps) {
       header: 'Nome',
     },
     {
+      accessorKey: 'cnpj',
+      header: 'CNPJ / CPF',
+    },
+    {
       accessorKey: 'contactName',
       header: 'Contato',
     },
