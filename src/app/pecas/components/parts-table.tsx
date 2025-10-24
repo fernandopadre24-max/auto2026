@@ -48,6 +48,10 @@ export const columns: ColumnDef<Part>[] = [
     header: 'SKU',
   },
   {
+    accessorKey: 'unit',
+    header: 'Unidade',
+  },
+  {
     accessorKey: 'manufacturer',
     header: 'Fabricante',
   },
