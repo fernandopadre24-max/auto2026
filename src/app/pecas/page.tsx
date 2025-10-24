@@ -53,68 +53,70 @@ export default function PartsPage() {
         </Button>
       </PageHeader>
       
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-           <Skeleton className="h-28" />
-           <Skeleton className="h-28" />
-           <Skeleton className="h-28" />
-           <Skeleton className="h-28" />
-           <Skeleton className="h-28" />
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            <Card className="bg-blue-500 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Peças (SKUs)</CardTitle>
-                    <Archive className="h-4 w-4 text-white" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{inventorySummary.totalSKUs}</div>
-                    <p className="text-xs text-blue-100">Tipos de peças únicas</p>
-                </CardContent>
-            </Card>
-            <Card className="bg-purple-500 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Itens Totais em Estoque</CardTitle>
-                    <Package className="h-4 w-4 text-white" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{inventorySummary.totalItemsInStock}</div>
-                     <p className="text-xs text-purple-100">Unidades totais</p>
-                </CardContent>
-            </Card>
-             <Card className="bg-amber-500 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Valor do Estoque (Custo)</CardTitle>
-                    <DollarSign className="h-4 w-4 text-white" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(inventorySummary.inventoryValueCost)}</div>
-                     <p className="text-xs text-amber-100">Custo total das peças</p>
-                </CardContent>
-            </Card>
-            <Card className="bg-emerald-500 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Potencial de Venda</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-white" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(inventorySummary.inventoryValueSale)}</div>
-                     <p className="text-xs text-emerald-100">Receita se tudo for vendido</p>
-                </CardContent>
-            </Card>
-            <Card className="bg-red-500 text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Peças com Estoque Baixo</CardTitle>
-                    <AlertTriangle className="h-4 w-4 text-white" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{inventorySummary.lowStockItems}</div>
-                    <p className="text-xs text-red-100">Itens com menos de 10 unidades</p>
-                </CardContent>
-            </Card>
-        </div>
-      )}
+      <div className="sticky top-0 z-10 bg-background py-4 -mt-4">
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+             <Skeleton className="h-28" />
+             <Skeleton className="h-28" />
+             <Skeleton className="h-28" />
+             <Skeleton className="h-28" />
+             <Skeleton className="h-28" />
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              <Card className="bg-blue-500 text-white">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total de Peças (SKUs)</CardTitle>
+                      <Archive className="h-4 w-4 text-white" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{inventorySummary.totalSKUs}</div>
+                      <p className="text-xs text-blue-100">Tipos de peças únicas</p>
+                  </CardContent>
+              </Card>
+              <Card className="bg-purple-500 text-white">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Itens Totais em Estoque</CardTitle>
+                      <Package className="h-4 w-4 text-white" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{inventorySummary.totalItemsInStock}</div>
+                       <p className="text-xs text-purple-100">Unidades totais</p>
+                  </CardContent>
+              </Card>
+               <Card className="bg-amber-500 text-white">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Valor do Estoque (Custo)</CardTitle>
+                      <DollarSign className="h-4 w-4 text-white" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(inventorySummary.inventoryValueCost)}</div>
+                       <p className="text-xs text-amber-100">Custo total das peças</p>
+                  </CardContent>
+              </Card>
+              <Card className="bg-emerald-500 text-white">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Potencial de Venda</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-white" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(inventorySummary.inventoryValueSale)}</div>
+                       <p className="text-xs text-emerald-100">Receita se tudo for vendido</p>
+                  </CardContent>
+              </Card>
+              <Card className="bg-red-500 text-white">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Peças com Estoque Baixo</CardTitle>
+                      <AlertTriangle className="h-4 w-4 text-white" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{inventorySummary.lowStockItems}</div>
+                      <p className="text-xs text-red-100">Itens com menos de 10 unidades</p>
+                  </CardContent>
+              </Card>
+          </div>
+        )}
+      </div>
 
       {isLoading ? (
         <div className="space-y-4">
