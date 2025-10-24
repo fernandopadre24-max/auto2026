@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Toaster } from '@/components/ui/toaster';
 import { DataProvider, useData } from '@/lib/data';
 import { useEffect } from 'react';
+import { ThemeProvider } from 'next-themes';
 
 function AppDynamicTitle() {
   const { config } = useData();
@@ -34,10 +35,17 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
           <DataProvider>
             <AppDynamicTitle />
             <MainLayout>{children}</MainLayout>
           </DataProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

@@ -7,6 +7,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -17,11 +18,14 @@ import {
   Car,
   ShoppingCart,
   Settings,
+  Calculator,
+  Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useData } from '@/lib/data';
+import { ThemeToggleButton } from '@/components/theme-toggle-button';
 
 const menuItems = [
   { href: '/', label: 'Início', icon: Home },
@@ -30,6 +34,8 @@ const menuItems = [
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
   { href: '/relatorios', label: 'Relatórios', icon: BarChart2 },
+  { href: '/calendario', label: 'Calendário', icon: Calendar },
+  { href: '/calculadora', label: 'Calculadora', icon: Calculator },
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
@@ -72,6 +78,9 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
+       <SidebarFooter>
+        <ThemeToggleButton />
+      </SidebarFooter>
     </>
   );
 }
