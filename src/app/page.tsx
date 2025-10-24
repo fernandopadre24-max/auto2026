@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
-import { DollarSign, Users, Package, ShoppingCart, ChevronDown, ChevronRight, CheckCircle } from 'lucide-react';
+import { DollarSign, Users, Package, ShoppingCart, ChevronDown, ChevronRight, CheckCircle, Hourglass } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -86,6 +86,7 @@ export default function Home() {
   }, [recentSales]);
 
   const totalRevenue = useMemo(() => sales.filter(s => s.status === 'Pago').reduce((acc, sale) => acc + sale.total, 0), [sales]);
+  const pendingAmount = useMemo(() => sales.filter(s => s.status === 'Pendente').reduce((acc, sale) => acc + sale.total, 0), [sales]);
   const recentSalesTotal = useMemo(() => recentSales.reduce((acc, sale) => acc + sale.total, 0), [recentSales]);
   const totalParts = useMemo(() => parts.reduce((acc, part) => acc + part.stock, 0), [parts]);
 
@@ -94,7 +95,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title="Painel" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card className="bg-emerald-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
@@ -103,6 +104,16 @@ export default function Home() {
           <CardContent>
             <div className="text-2xl font-bold">{totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
             <p className="text-xs text-emerald-100">+20.1% em relação ao mês passado</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-amber-500 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valores Pendentes</CardTitle>
+            <Hourglass className="h-4 w-4 text-white" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+            <p className="text-xs text-amber-100">{sales.filter(s => s.status === 'Pendente').length} vendas pendentes</p>
           </CardContent>
         </Card>
         <Card className="bg-blue-500 text-white">
