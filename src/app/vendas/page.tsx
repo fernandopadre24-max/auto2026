@@ -136,26 +136,74 @@ export default function VendasPage() {
     }
   };
 
+  const handleOpenFinalizeDialog = (type: 'prazo' | 'parcelado') => {
+    if (cartItems.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Carrinho Vazio',
+        description: 'Adicione itens antes de finalizar a venda.',
+      });
+      return;
+    }
+    setSaleType(type);
+    setIsFinalizeSaleDialogOpen(true);
+  };
+  
+  const handleSimplePayment = (paymentMethod: 'PIX' | 'Dinheiro') => {
+      if (cartItems.length === 0) {
+          toast({ variant: 'destructive', title: 'Carrinho Vazio', description: 'Adicione itens antes de finalizar a venda.' });
+          return;
+      }
+  
+      // For simple payments, we can use a default customer or create one on the fly
+      const defaultCustomer = allCustomersData.find(c => c.email === 'consumidor@final.com') || 
+                              { id: 'default', firstName: 'Consumidor', lastName: 'Final', email: 'consumidor@final.com', phoneNumber: '', address: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()};
+  
+      finishSale({
+          customer: defaultCustomer,
+          installments: 1,
+          paymentMethod: paymentMethod,
+      });
+  }
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!authenticatedEmployee) return;
-      if (e.key === 'F9') {
+
+      const key = e.key.toLowerCase();
+
+      if (key === 'f9') {
         e.preventDefault();
         setIsCustomerDialogOpen(true);
       }
-      if (e.key === 'F11') {
+      if (key === 'f11') {
         e.preventDefault();
         restoreLastSale();
       }
-      if (e.key.toLowerCase() === 'f4') {
+      if (key === 'f1') {
+        e.preventDefault();
+        handleSimplePayment('Dinheiro');
+      }
+      if (key === 'f2') {
+        e.preventDefault();
+        cancelSale();
+      }
+      if (key === 'f3') {
+          e.preventDefault();
+          handleSimplePayment('PIX');
+      }
+      if (key === 'f4') {
         e.preventDefault();
         handleOpenFinalizeDialog('prazo');
       }
-      if (e.key.toLowerCase() === 'f5') {
+      if (key === 'f5') {
         e.preventDefault();
         handleOpenFinalizeDialog('parcelado');
+      }
+      if (e.key === 'Escape') {
+        handleLogout();
       }
     };
 
@@ -239,19 +287,6 @@ export default function VendasPage() {
 
     resetSaleState();
     setLastAction('Venda finalizada. Caixa livre.');
-  };
-
-  const handleOpenFinalizeDialog = (type: 'prazo' | 'parcelado') => {
-    if (cartItems.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Carrinho Vazio',
-        description: 'Adicione itens antes de finalizar a venda.',
-      });
-      return;
-    }
-    setSaleType(type);
-    setIsFinalizeSaleDialogOpen(true);
   };
 
   const resetSaleState = () => {
@@ -557,8 +592,14 @@ export default function VendasPage() {
                 />
               </div>
               <div className="space-y-2">
+                <ActionButton onClick={() => handleSimplePayment('Dinheiro')}>
+                  PAGAR COM DINHEIRO - F1
+                </ActionButton>
                 <ActionButton onClick={cancelSale}>
                   CANCELAR VENDA - F2
+                </ActionButton>
+                 <ActionButton onClick={() => handleSimplePayment('PIX')}>
+                  PAGAR COM PIX - F3
                 </ActionButton>
                 <ActionButton onClick={() => handleOpenFinalizeDialog('prazo')}>
                   VENDER A PRAZO - F4
