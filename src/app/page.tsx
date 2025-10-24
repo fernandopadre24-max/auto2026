@@ -132,6 +132,7 @@ export default function Home() {
               {Object.entries(groupedSales).map(([employeeId, employeeSales]) => {
                 const employee = employees.find(e => e.id === employeeId);
                 const isExpanded = expandedEmployees.has(employeeId);
+                const employeeSubtotal = employeeSales.reduce((acc, sale) => acc + sale.total, 0);
 
                 return (
                   <React.Fragment key={employeeId}>
@@ -141,9 +142,10 @@ export default function Home() {
                                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </Button>
                         </TableCell>
-                        <TableCell colSpan={5} className="font-bold text-primary">
+                        <TableCell colSpan={4} className="font-bold text-primary">
                             {employee ? `${employee.firstName} ${employee.lastName}` : 'Funcionário Desconhecido'}
                         </TableCell>
+                        <TableCell className="text-right font-bold text-primary">{formatCurrency(employeeSubtotal)}</TableCell>
                     </TableRow>
                     {isExpanded && employeeSales.map((sale) => {
                         const customer = customers.find(c => c.id === sale.customerId);
