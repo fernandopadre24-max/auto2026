@@ -3,12 +3,12 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { PlusCircle, Archive, Package, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
+import { PlusCircle, Archive, Package, DollarSign, AlertTriangle, TrendingUp, List, LayoutGrid } from 'lucide-react';
 import { PartsTable } from './components/parts-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useData } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -16,6 +16,7 @@ const formatCurrency = (value: number) => {
 
 export default function PartsPage() {
   const { parts, isLoading } = useData();
+  const [viewMode, setViewMode] = useState<'retro' | 'modern'>('retro');
 
   const inventorySummary = useMemo(() => {
     if (!parts) {
@@ -41,10 +42,17 @@ export default function PartsPage() {
     };
   }, [parts]);
 
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'retro' ? 'modern' : 'retro');
+  }
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title="Catálogo de Peças">
+        <Button variant="ghost" size="icon" onClick={toggleViewMode}>
+          {viewMode === 'retro' ? <LayoutGrid /> : <List />}
+          <span className="sr-only">Alterar Visualização</span>
+        </Button>
         <Button asChild>
           <Link href="/pecas/add">
             <PlusCircle />
@@ -128,7 +136,7 @@ export default function PartsPage() {
           </div>
         </div>
       ) : (
-        <PartsTable data={parts || []} />
+        <PartsTable data={parts || []} viewMode={viewMode} />
       )}
     </div>
   );

@@ -41,6 +41,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 type PartsTableProps = {
   data: Part[];
+  viewMode: 'retro' | 'modern';
 };
 
 const formatCurrency = (amount: number) => {
@@ -50,7 +51,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-export function PartsTable({ data }: PartsTableProps) {
+export function PartsTable({ data, viewMode }: PartsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const router = useRouter();
@@ -116,7 +117,8 @@ export function PartsTable({ data }: PartsTableProps) {
       header: () => <div className="text-right">Preço de Venda</div>,
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('salePrice'));
-        return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
+        const formattedAmount = formatCurrency(amount);
+        return <div className="text-right font-medium">{formattedAmount}</div>;
       },
     },
     {
@@ -129,19 +131,20 @@ export function PartsTable({ data }: PartsTableProps) {
       header: () => <div className="text-center">Ações</div>,
       cell: ({ row }) => {
         const part = row.original;
+        const isRetro = viewMode === 'retro';
         return (
           <div className="flex items-center justify-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-yellow-200" onClick={() => handleDuplicate(part.id)}>
+            <Button variant="ghost" size="icon" className={`h-8 w-8 ${isRetro ? 'hover:bg-yellow-200' : ''}`} onClick={() => handleDuplicate(part.id)}>
                 <Copy className="h-4 w-4" />
                 <span className="sr-only">Duplicar</span>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-yellow-200" asChild>
+            <Button variant="ghost" size="icon" className={`h-8 w-8 ${isRetro ? 'hover:bg-yellow-200' : ''}`} asChild>
               <Link href={`/pecas/${part.id}/edit`}>
                 <Pencil className="h-4 w-4" />
                 <span className="sr-only">Editar</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-yellow-200" onClick={() => handleDelete(part)}>
+            <Button variant="ghost" size="icon" className={`h-8 w-8 text-red-500 hover:text-red-600 ${isRetro ? 'hover:bg-yellow-200' : ''}`} onClick={() => handleDelete(part)}>
               <Trash2 className="h-4 w-4" />
               <span className="sr-only">Excluir</span>
             </Button>
@@ -166,6 +169,123 @@ export function PartsTable({ data }: PartsTableProps) {
     },
   });
 
+  const filterBackgroundColor = viewMode === 'retro' ? 'bg-blue-800 text-white' : 'bg-card';
+  const filterInputColor = viewMode === 'retro' ? 'bg-white text-black' : '';
+
+
+  const renderTable = () => {
+    if (viewMode === 'retro') {
+      return (
+        <Card className="font-mono text-black bg-yellow-100 border-yellow-200 shadow-lg">
+          <CardContent className="p-0">
+              <Table>
+              <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-b-gray-400 border-dashed hover:bg-yellow-100/50">
+                      {headerGroup.headers.map((header) => {
+                      return (
+                          <TableHead key={header.id} className="text-black">
+                          {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                              )}
+                          </TableHead>
+                      );
+                      })}
+                  </TableRow>
+                  ))}
+              </TableHeader>
+              <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                      <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50"
+                      >
+                      {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                          {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                          )}
+                          </TableCell>
+                      ))}
+                      </TableRow>
+                  ))
+                  ) : (
+                  <TableRow>
+                      <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                      >
+                      Nenhum resultado.
+                      </TableCell>
+                  </TableRow>
+                  )}
+              </TableBody>
+              </Table>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Nenhum resultado.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    )
+  }
+
   return (
     <>
     <DeleteConfirmationDialog
@@ -176,7 +296,7 @@ export function PartsTable({ data }: PartsTableProps) {
         itemType="peça"
       />
     <div className="flex flex-col gap-4">
-      <Card className="bg-blue-800 text-white p-4">
+      <Card className={`${filterBackgroundColor} p-4`}>
         <CardContent className="p-0">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Input
@@ -185,7 +305,7 @@ export function PartsTable({ data }: PartsTableProps) {
             onChange={(event) =>
                 table.getColumn('name')?.setFilterValue(event.target.value)
             }
-            className="bg-white text-black"
+            className={filterInputColor}
             />
             <Input
             placeholder="Filtrar por fabricante..."
@@ -193,7 +313,7 @@ export function PartsTable({ data }: PartsTableProps) {
             onChange={(event) =>
                 table.getColumn('manufacturer')?.setFilterValue(event.target.value)
             }
-             className="bg-white text-black"
+             className={filterInputColor}
             />
             <Input
             placeholder="Filtrar por categoria..."
@@ -201,13 +321,13 @@ export function PartsTable({ data }: PartsTableProps) {
             onChange={(event) =>
                 table.getColumn('category')?.setFilterValue(event.target.value)
             }
-             className="bg-white text-black"
+             className={filterInputColor}
             />
             <Select
                 value={(table.getColumn('unit')?.getFilterValue() as string) ?? ''}
                 onValueChange={(value) => table.getColumn('unit')?.setFilterValue(value === 'all' ? '' : value)}
             >
-                <SelectTrigger className="bg-white text-black">
+                <SelectTrigger className={filterInputColor}>
                     <SelectValue placeholder="Filtrar por Unidade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,59 +341,8 @@ export function PartsTable({ data }: PartsTableProps) {
         </CardContent>
       </Card>
       
-      <Card className="font-mono text-black bg-yellow-100 border-yellow-200 shadow-lg">
-        <CardContent className="p-0">
-            <Table>
-            <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-b-gray-400 border-dashed hover:bg-yellow-100/50">
-                    {headerGroup.headers.map((header) => {
-                    return (
-                        <TableHead key={header.id} className="text-black">
-                        {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                            )}
-                        </TableHead>
-                    );
-                    })}
-                </TableRow>
-                ))}
-            </TableHeader>
-            <TableBody>
-                {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                    <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50"
-                    >
-                    {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                        {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                        )}
-                        </TableCell>
-                    ))}
-                    </TableRow>
-                ))
-                ) : (
-                <TableRow>
-                    <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                    >
-                    Nenhum resultado.
-                    </TableCell>
-                </TableRow>
-                )}
-            </TableBody>
-            </Table>
-        </CardContent>
-      </Card>
+      {renderTable()}
+
        <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
