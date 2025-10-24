@@ -40,6 +40,9 @@ interface DataContextProps {
   config: StoreConfig;
   isLoading: boolean;
   saveConfig: (newConfig: StoreConfig) => void;
+  updateCustomer: (updatedCustomer: Customer) => void;
+  updateEmployee: (updatedEmployee: Employee) => void;
+  updatePart: (updatedPart: Part) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -62,9 +65,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const saveConfig = (newConfig: StoreConfig) => {
     setConfig(newConfig);
-    // In a real app, you would also save this to a persistent storage
-    // like localStorage or a database.
   };
+
+  const updateCustomer = (updatedCustomer: Customer) => {
+    setCustomers(customers.map(c => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer } : c));
+  };
+  
+  const updateEmployee = (updatedEmployee: Employee) => {
+    setEmployees(employees.map(e => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee } : e));
+  };
+
+  const updatePart = (updatedPart: Part) => {
+    setParts(parts.map(p => p.id === updatedPart.id ? { ...p, ...updatedPart } : p));
+  }
   
   const value = {
     parts,
@@ -74,6 +87,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     config,
     isLoading,
     saveConfig,
+    updateCustomer,
+    updateEmployee,
+    updatePart,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

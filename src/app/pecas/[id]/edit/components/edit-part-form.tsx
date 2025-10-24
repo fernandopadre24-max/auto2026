@@ -32,6 +32,7 @@ import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFormStatus } from 'react-dom';
 
 const formSchema = z.object({
   partName: z
@@ -77,10 +78,10 @@ type EditPartFormProps = {
 };
 
 function SubmitButton() {
-    const { formState } = useForm();
+    const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={formState.isSubmitting} className="bg-accent text-accent-foreground hover:bg-accent/90">
-            {formState.isSubmitting ? <Loader2 className="animate-spin" /> : 'Salvar Alterações'}
+        <Button type="submit" disabled={pending} className="bg-accent text-accent-foreground hover:bg-accent/90">
+            {pending ? <Loader2 className="animate-spin" /> : 'Salvar Alterações'}
         </Button>
     )
 }
@@ -88,7 +89,7 @@ function SubmitButton() {
 export function EditPartForm({ partId }: EditPartFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const { parts, isLoading } = useData();
+  const { parts, isLoading, updatePart } = useData();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
 
@@ -131,25 +132,25 @@ export function EditPartForm({ partId }: EditPartFormProps) {
     }
   }, [part, form]);
 
-  async function updatePartAction(values: PartFormData) {
+  async function onSubmit(values: PartFormData) {
+    if (!part) return;
     try {
-      const partData = {
-        id: partId,
+      updatePart({
+        id: part.id,
+        sku: part.sku, // Preserve existing SKU
         name: values.partName,
-        sku: part?.sku, // Keep original SKU
-        stock: Number(values.inventoryLevel),
-        purchasePrice: Number(values.purchasePrice),
-        salePrice: Number(values.salePrice),
         category: values.partCategory,
         unit: values.unit,
         manufacturer: values.manufacturer,
         vehicleModel: values.model,
         vehicleYear: Number(values.year),
         condition: values.condition,
+        stock: Number(values.inventoryLevel),
+        purchasePrice: Number(values.purchasePrice),
+        salePrice: Number(values.salePrice),
         technicalSpecifications: values.technicalSpecifications,
-        description: values.description,
-      };
-      console.log('Updating part (mock):', partData);
+        description: values.description || '',
+      });
       toast({
         title: 'Sucesso!',
         description: 'Os dados da peça foram atualizados.',
@@ -246,7 +247,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(updatePartAction)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -336,7 +337,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
                 <FormLabel>Condição</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -465,6 +466,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
                     placeholder="Descrição detalhada do produto para o cliente."
                     className="resize-y min-h-[120px]"
                     {...field}
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormDescription>

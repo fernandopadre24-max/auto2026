@@ -19,6 +19,7 @@ import { Loader2 } from 'lucide-react';
 import { useData } from '@/lib/data';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFormStatus } from 'react-dom';
 
 const formSchema = z.object({
   firstName: z
@@ -37,9 +38,7 @@ type EditClienteFormProps = {
 };
 
 function SubmitButton() {
-  const { pending } = useForm({
-    resolver: zodResolver(formSchema),
-  });
+  const { pending } = useFormStatus();
 
   return (
     <Button type="submit" disabled={pending}>
@@ -51,7 +50,7 @@ function SubmitButton() {
 export function EditClienteForm({ customerId }: EditClienteFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const { customers, isLoading } = useData();
+  const { customers, isLoading, updateCustomer } = useData();
 
   const customer = customers.find((c) => c.id === customerId);
 
@@ -73,8 +72,14 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
   }, [customer, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!customer) return;
     try {
-      console.log('Updating customer (mock):', customerId, values);
+      updateCustomer({
+        ...customer,
+        ...values,
+        phoneNumber: values.phoneNumber || '',
+        address: values.address || '',
+      });
       toast({
         title: 'Sucesso!',
         description: 'Dados do cliente atualizados.',
@@ -152,7 +157,7 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -168,6 +173,7 @@ export function EditClienteForm({ customerId }: EditClienteFormProps) {
                   <Input
                     placeholder="Rua, Número, Bairro, Cidade - Estado"
                     {...field}
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />

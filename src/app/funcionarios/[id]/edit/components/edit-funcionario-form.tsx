@@ -50,7 +50,7 @@ function SubmitButton() {
 export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const { employees, isLoading } = useData();
+  const { employees, isLoading, updateEmployee } = useData();
 
   const employee = employees.find((e) => e.id === employeeId);
 
@@ -72,8 +72,13 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
   }, [employee, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!employee) return;
     try {
-      console.log('Updating employee (mock):', employeeId, values);
+      updateEmployee({
+        ...employee,
+        ...values,
+        phoneNumber: values.phoneNumber || '',
+      });
       toast({
         title: 'Sucesso!',
         description: 'Dados do funcionário atualizados.',
@@ -151,7 +156,7 @@ export function EditFuncionarioForm({ employeeId }: EditFuncionarioFormProps) {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input placeholder="(00) 00000-0000" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
