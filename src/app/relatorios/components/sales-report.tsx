@@ -160,7 +160,7 @@ export function SalesReport({
     return customer ? `${customer.firstName} ${customer.lastName}`: 'N/A';
   }
 
-  const getHeaderColSpan = () => selectedEmployeeId === 'all' ? 5 : 6;
+  const getHeaderColSpan = () => selectedEmployeeId === 'all' ? 5 : 4;
 
 
   return (
@@ -211,12 +211,12 @@ export function SalesReport({
           </ResponsiveContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="bg-yellow-100 font-mono text-black border-yellow-200 shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Vendas Detalhadas</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl">Vendas Detalhadas</CardTitle>
+              <CardDescription className="text-gray-700">
                 Exibindo {totalSales} vendas com uma receita total de{' '}
                 {formatCurrency(totalRevenue)}.
               </CardDescription>
@@ -226,7 +226,7 @@ export function SalesReport({
                 value={selectedEmployeeId}
                 onValueChange={setSelectedEmployeeId}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="Filtrar por funcionário" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,31 +244,31 @@ export function SalesReport({
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                {selectedEmployeeId === 'all' && <TableHead className="w-12"></TableHead>}
-                <TableHead>ID da Venda</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Pagamento</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+              <TableRow className="border-b-gray-400 border-dashed hover:bg-yellow-100/50">
+                {selectedEmployeeId === 'all' && <TableHead className="w-12 text-black"></TableHead>}
+                <TableHead className="text-black">ID da Venda</TableHead>
+                <TableHead className="text-black">Cliente</TableHead>
+                <TableHead className="text-black">Itens</TableHead>
+                <TableHead className="text-black">Data</TableHead>
+                <TableHead className="text-black">Pagamento</TableHead>
+                <TableHead className="text-right text-black">Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {totalSales > 0 ? (
                 selectedEmployeeId !== 'all' ? (
                     filteredSales.map((sale) => (
-                        <TableRow key={sale.id}>
-                            <TableCell className="font-medium">{sale.id}</TableCell>
-                            <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
-                            <TableCell>
+                        <TableRow key={sale.id} className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50">
+                            <TableCell className="font-medium py-2 px-4">{sale.id}</TableCell>
+                            <TableCell className="py-2 px-4">{getCustomerName(sale.customerId || '')}</TableCell>
+                            <TableCell className="py-2 px-4">
                             <ul>
                                 {sale.items.map((item, index) => {
                                 const part = parts.find((p) => p.id === item.partId);
                                 return (
                                     <li
                                     key={index}
-                                    className="text-xs text-muted-foreground"
+                                    className="text-gray-600"
                                     >
                                     {item.quantity}x {part?.name || 'Peça não encontrada'}
                                     </li>
@@ -276,11 +276,11 @@ export function SalesReport({
                                 })}
                             </ul>
                             </TableCell>
-                            <TableCell>{formatDate(sale.date)}</TableCell>
-                            <TableCell>
-                                <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                            <TableCell className="py-2 px-4">{formatDate(sale.date)}</TableCell>
+                            <TableCell className="py-2 px-4">
+                                <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right py-2 px-4">
                             {formatCurrency(sale.total)}
                             </TableCell>
                         </TableRow>
@@ -291,32 +291,32 @@ export function SalesReport({
                         const isExpanded = expandedEmployees.has(employeeId);
                         return (
                             <React.Fragment key={employeeId}>
-                                <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleEmployeeExpansion(employeeId)}>
-                                    <TableCell>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <TableRow className="border-0 bg-yellow-50 hover:bg-yellow-100 cursor-pointer" onClick={() => toggleEmployeeExpansion(employeeId)}>
+                                    <TableCell className="py-2 px-4">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-black hover:bg-yellow-200 hover:text-black">
                                             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                         </Button>
                                     </TableCell>
-                                    <TableCell colSpan={getHeaderColSpan() - 1} className="font-bold text-primary">
+                                    <TableCell colSpan={getHeaderColSpan() - 1} className="font-bold text-blue-900 py-2 px-4">
                                         {getEmployeeName(employeeId)}
                                     </TableCell>
-                                    <TableCell className="text-right font-bold text-primary">
+                                    <TableCell className="text-right font-bold text-blue-900 py-2 px-4">
                                         {formatCurrency(group.total)}
                                     </TableCell>
                                 </TableRow>
                                 {isExpanded && group.sales.map(sale => (
-                                     <TableRow key={sale.id}>
-                                        <TableCell />
-                                        <TableCell className="font-medium">{sale.id}</TableCell>
-                                        <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
-                                        <TableCell>
+                                     <TableRow key={sale.id} className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50">
+                                        <TableCell className="py-2 px-4" />
+                                        <TableCell className="font-medium py-2 px-4">{sale.id}</TableCell>
+                                        <TableCell className="py-2 px-4">{getCustomerName(sale.customerId || '')}</TableCell>
+                                        <TableCell className="py-2 px-4">
                                         <ul>
                                             {sale.items.map((item, index) => {
                                             const part = parts.find((p) => p.id === item.partId);
                                             return (
                                                 <li
                                                 key={index}
-                                                className="text-xs text-muted-foreground"
+                                                className="text-gray-600"
                                                 >
                                                 {item.quantity}x {part?.name || 'Peça não encontrada'}
                                                 </li>
@@ -324,11 +324,11 @@ export function SalesReport({
                                             })}
                                         </ul>
                                         </TableCell>
-                                        <TableCell>{formatDate(sale.date)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                                        <TableCell className="py-2 px-4">{formatDate(sale.date)}</TableCell>
+                                        <TableCell className="py-2 px-4">
+                                            <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right py-2 px-4">
                                         {formatCurrency(sale.total)}
                                         </TableCell>
                                     </TableRow>
@@ -347,9 +347,9 @@ export function SalesReport({
             </TableBody>
              {totalSales > 0 && (
               <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={selectedEmployeeId === 'all' ? 6 : 6} className="text-right font-bold">Total Geral</TableCell>
-                  <TableCell className="text-right font-bold">{formatCurrency(totalRevenue)}</TableCell>
+                <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
+                  <TableCell colSpan={selectedEmployeeId === 'all' ? 6 : 6} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
+                  <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(totalRevenue)}</TableCell>
                 </TableRow>
               </TableFooter>
             )}
