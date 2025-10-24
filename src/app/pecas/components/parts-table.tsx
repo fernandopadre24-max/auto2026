@@ -54,6 +54,10 @@ const formatCurrency = (amount: number) => {
 export function PartsTable({ data, viewMode }: PartsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const router = useRouter();
   const { deletePart } = useData();
   const { toast } = useToast();
@@ -163,11 +167,28 @@ export function PartsTable({ data, viewMode }: PartsTableProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
+      pagination,
     },
   });
+
+  React.useEffect(() => {
+    const calculatePageSize = () => {
+      const topOffset = 450; // Approximate height of elements above the table
+      const rowHeight = viewMode === 'retro' ? 45 : 65; // Approximate height of a row in each mode
+      const availableHeight = window.innerHeight - topOffset;
+      const newPageSize = Math.max(5, Math.floor(availableHeight / rowHeight));
+      table.setPageSize(newPageSize);
+    };
+
+    calculatePageSize();
+    window.addEventListener('resize', calculatePageSize);
+    return () => window.removeEventListener('resize', calculatePageSize);
+  }, [table, viewMode]);
+
 
   const filterBackgroundColor = viewMode === 'retro' ? 'bg-blue-800 text-white' : 'bg-card';
   const filterInputColor = viewMode === 'retro' ? 'bg-white text-black' : '';
