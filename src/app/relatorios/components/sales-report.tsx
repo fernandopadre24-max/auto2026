@@ -129,6 +129,7 @@ export function SalesReport({
   }
 
   let lastEmployeeId: string | null = null;
+  const colSpan = selectedEmployeeId === 'all' ? 6 : 5;
 
   return (
     <div className="flex flex-col gap-8">
@@ -213,7 +214,6 @@ export function SalesReport({
             <TableHeader>
               <TableRow>
                 <TableHead>ID da Venda</TableHead>
-                {selectedEmployeeId === 'all' && <TableHead>Funcionário</TableHead>}
                 <TableHead>Cliente</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead>Data</TableHead>
@@ -232,14 +232,13 @@ export function SalesReport({
                     <React.Fragment key={sale.id}>
                       {showEmployeeHeader && (
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
-                          <TableCell colSpan={7} className="font-bold text-primary">
+                          <TableCell colSpan={colSpan} className="font-bold text-primary">
                             {getEmployeeName(sale.employeeId)}
                           </TableCell>
                         </TableRow>
                       )}
                       <TableRow>
                         <TableCell className="font-medium">{sale.id}</TableCell>
-                        {selectedEmployeeId === 'all' && <TableCell>{getEmployeeName(sale.employeeId)}</TableCell>}
                         <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
                         <TableCell>
                           <ul>
@@ -269,7 +268,7 @@ export function SalesReport({
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={colSpan} className="h-24 text-center">
                     Nenhum resultado.
                   </TableCell>
                 </TableRow>
