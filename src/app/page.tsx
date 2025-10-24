@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react';
 import type { Sale } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -114,20 +115,20 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
-      <Card>
+       <Card className="bg-yellow-100 font-mono text-black border-yellow-200 shadow-lg">
         <CardHeader>
-          <CardTitle>Vendas Recentes</CardTitle>
+          <CardTitle className="text-xl">Vendas Recentes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
+           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-b-gray-400 border-dashed hover:bg-yellow-100/50">
                 <TableHead className="w-12"></TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Pagamento</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-black">Cliente</TableHead>
+                <TableHead className="text-black">Itens</TableHead>
+                <TableHead className="text-black">Data</TableHead>
+                <TableHead className="text-black">Pagamento</TableHead>
+                <TableHead className="text-right text-black">Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -138,39 +139,42 @@ export default function Home() {
 
                 return (
                   <React.Fragment key={employeeId}>
-                    <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleEmployeeExpansion(employeeId)}>
-                        <TableCell>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                     <TableRow 
+                        className="border-0 bg-yellow-50 hover:bg-yellow-100 cursor-pointer" 
+                        onClick={() => toggleEmployeeExpansion(employeeId)}
+                    >
+                        <TableCell className="py-2 px-4">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-black hover:bg-yellow-200 hover:text-black">
                                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </Button>
                         </TableCell>
-                        <TableCell colSpan={4} className="font-bold text-primary">
+                        <TableCell colSpan={4} className="font-bold text-blue-900 py-2 px-4">
                             {employee ? `(${employee.employeeCode}) ${employee.firstName} ${employee.lastName}` : 'Funcionário Desconhecido'}
                         </TableCell>
-                        <TableCell className="text-right font-bold text-primary">{formatCurrency(employeeSubtotal)}</TableCell>
+                        <TableCell className="text-right font-bold text-blue-900 py-2 px-4">{formatCurrency(employeeSubtotal)}</TableCell>
                     </TableRow>
                     {isExpanded && employeeSales.map((sale) => {
                         const customer = customers.find(c => c.id === sale.customerId);
                         return (
-                            <TableRow key={sale.id}>
-                            <TableCell></TableCell>
-                            <TableCell>
+                            <TableRow key={sale.id} className="text-xs border-b border-dashed border-gray-400/50 hover:bg-yellow-100/50">
+                            <TableCell className="py-2 px-4"></TableCell>
+                            <TableCell className="py-2 px-4">
                                 <div className="font-medium">{customer ? `${customer.firstName} ${customer.lastName}`: 'N/A'}</div>
-                                {customer?.email && <div className="text-sm text-muted-foreground">{customer.email}</div>}
+                                {customer?.email && <div className="text-gray-600">{customer.email}</div>}
                             </TableCell>
-                            <TableCell>
-                                <ul className="list-disc list-inside text-xs">
+                            <TableCell className="py-2 px-4">
+                                <ul className="list-disc list-inside">
                                 {sale.items.map((item, index) => {
                                     const part = parts.find(p => p.id === item.partId);
                                     return <li key={index}>{item.quantity}x {part?.name || 'Peça desconhecida'} ({formatCurrency(item.unitPrice)})</li>
                                 })}
                                 </ul>
                             </TableCell>
-                            <TableCell>{formatDate(sale.date)}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                            <TableCell className="py-2 px-4">{formatDate(sale.date)}</TableCell>
+                            <TableCell className="py-2 px-4">
+                              <Badge variant="secondary" className="bg-gray-200 text-black">{formatPaymentMethod(sale)}</Badge>
                             </TableCell>
-                            <TableCell className="text-right">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                            <TableCell className="text-right py-2 px-4">{sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                             </TableRow>
                         )
                     })}
@@ -185,9 +189,9 @@ export default function Home() {
             </TableBody>
             {recentSales.length > 0 && (
               <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={5} className="text-right font-bold">Total Geral</TableCell>
-                  <TableCell className="text-right font-bold">{formatCurrency(recentSalesTotal)}</TableCell>
+                <TableRow className="border-t border-dashed border-gray-400 hover:bg-yellow-100">
+                  <TableCell colSpan={5} className="text-right font-bold py-2 px-4">Total Geral</TableCell>
+                  <TableCell className="text-right font-bold py-2 px-4">{formatCurrency(recentSalesTotal)}</TableCell>
                 </TableRow>
               </TableFooter>
             )}
