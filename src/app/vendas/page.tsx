@@ -24,6 +24,7 @@ import {
 import { EmployeeLoginDialog } from './components/employee-login-dialog';
 import { useData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CashPaymentDialog } from './components/cash-payment-dialog';
 
 type CartItem = {
   part: Part;
@@ -57,6 +58,7 @@ export default function VendasPage() {
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [isFinalizeSaleDialogOpen, setIsFinalizeSaleDialogOpen] =
     useState(false);
+  const [isCashPaymentDialogOpen, setIsCashPaymentDialogOpen] = useState(false);
   const [saleType, setSaleType] = useState<'prazo' | 'parcelado'>('prazo');
   const [authenticatedEmployee, setAuthenticatedEmployee] =
     useState<Employee | null>(null);
@@ -154,8 +156,12 @@ export default function VendasPage() {
           toast({ variant: 'destructive', title: 'Carrinho Vazio', description: 'Adicione itens antes de finalizar a venda.' });
           return;
       }
+      if (paymentMethod === 'Dinheiro') {
+        setIsCashPaymentDialogOpen(true);
+        return;
+      }
   
-      // For simple payments, we can use a default customer or create one on the fly
+      // For PIX, we can use a default customer or create one on the fly
       const defaultCustomer = allCustomersData.find(c => c.email === 'consumidor@final.com') || 
                               { id: 'default', firstName: 'Consumidor', lastName: 'Final', email: 'consumidor@final.com', phoneNumber: '', address: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()};
   
@@ -372,6 +378,25 @@ export default function VendasPage() {
           setIsFinalizeSaleDialogOpen(false);
         }}
       />
+      <CashPaymentDialog
+        isOpen={isCashPaymentDialogOpen}
+        onOpenChange={setIsCashPaymentDialogOpen}
+        total={subtotal}
+        onConfirm={(amountPaid) => {
+          const defaultCustomer = allCustomersData.find(c => c.email === 'consumidor@final.com') || 
+                                  { id: 'default', firstName: 'Consumidor', lastName: 'Final', email: 'consumidor@final.com', phoneNumber: '', address: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()};
+          finishSale({
+              customer: defaultCustomer,
+              installments: 1,
+              paymentMethod: 'Dinheiro',
+          });
+          setIsCashPaymentDialogOpen(false);
+           toast({
+            title: 'Venda em Dinheiro',
+            description: `Valor pago: ${formatCurrency(amountPaid)}. Troco: ${formatCurrency(amountPaid - subtotal)}.`,
+          });
+        }}
+       />
       <div className="flex h-[calc(100vh-100px)] w-full flex-col bg-slate-100 p-2 font-mono text-sm">
         {/* Top Bar */}
         <div className="relative flex items-center justify-between gap-4 rounded-t-lg bg-blue-800 p-2 text-white">
