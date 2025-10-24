@@ -204,8 +204,6 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
                   <React.Fragment key={row.id}>
                     <TableRow
                       data-state={row.getIsSelected() && 'selected'}
-                      onClick={row.getToggleExpandedHandler()}
-                      className="cursor-pointer"
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
