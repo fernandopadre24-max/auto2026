@@ -143,7 +143,7 @@ export default function Home() {
                             </Button>
                         </TableCell>
                         <TableCell colSpan={4} className="font-bold text-primary">
-                            {employee ? `${employee.firstName} ${employee.lastName}` : 'Funcionário Desconhecido'}
+                            {employee ? `(${employee.employeeCode}) ${employee.firstName} ${employee.lastName}` : 'Funcionário Desconhecido'}
                         </TableCell>
                         <TableCell className="text-right font-bold text-primary">{formatCurrency(employeeSubtotal)}</TableCell>
                     </TableRow>
