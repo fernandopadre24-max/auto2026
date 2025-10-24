@@ -10,6 +10,7 @@ export type Part = {
   category: string;
   unit: string;
   manufacturer: string;
+  supplierId?: string;
   vehicleModel: string;
   vehicleYear: number;
   condition: string;

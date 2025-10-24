@@ -43,6 +43,7 @@ const formSchema = z.object({
   manufacturer: z
     .string()
     .min(2, { message: 'O fabricante deve ter pelo menos 2 caracteres.' }),
+  supplierId: z.string().optional(),
   model: z.string().min(1, { message: 'O modelo do veículo é obrigatório.' }),
   year: z
     .string()
@@ -89,7 +90,7 @@ function SubmitButton() {
 export function EditPartForm({ partId }: EditPartFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const { parts, isLoading, updatePart } = useData();
+  const { parts, suppliers, isLoading, updatePart } = useData();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
 
@@ -102,6 +103,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
         partCategory: '',
         unit: 'UN',
         manufacturer: '',
+        supplierId: '',
         model: '',
         year: '',
         technicalSpecifications: '',
@@ -120,6 +122,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
         partCategory: part.category,
         unit: part.unit,
         manufacturer: part.manufacturer,
+        supplierId: part.supplierId,
         model: part.vehicleModel,
         year: String(part.vehicleYear),
         technicalSpecifications: part.technicalSpecifications,
@@ -142,6 +145,7 @@ export function EditPartForm({ partId }: EditPartFormProps) {
         category: values.partCategory,
         unit: values.unit,
         manufacturer: values.manufacturer,
+        supplierId: values.supplierId,
         vehicleModel: values.model,
         vehicleYear: Number(values.year),
         condition: values.condition,
@@ -299,6 +303,32 @@ export function EditPartForm({ partId }: EditPartFormProps) {
                 <FormControl>
                   <Input placeholder="Ex: Bosch" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="supplierId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fornecedor</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um fornecedor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {suppliers.map(supplier => (
+                      <SelectItem key={supplier.id} value={supplier.id}>{supplier.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

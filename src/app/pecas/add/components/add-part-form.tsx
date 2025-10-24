@@ -38,6 +38,7 @@ const formSchema = z.object({
   partCategory: z.string().min(1, { message: 'A categoria é obrigatória.' }),
   unit: z.string().min(1, { message: 'A unidade é obrigatória (Ex: UN, CX, M).'}),
   manufacturer: z.string().min(2, { message: 'O fabricante deve ter pelo menos 2 caracteres.' }),
+  supplierId: z.string().optional(),
   model: z.string().min(1, { message: 'O modelo do veículo é obrigatório.' }),
   year: z.string().refine((val) => !isNaN(parseInt(val, 10)) && parseInt(val, 10) > 1900 && parseInt(val, 10) <= new Date().getFullYear() + 1, { message: 'Insira um ano válido.' }),
   technicalSpecifications: z.string().min(10, { message: 'As especificações devem ter pelo menos 10 caracteres.' }),
@@ -65,7 +66,7 @@ export function AddPartForm() {
   const searchParams = useSearchParams();
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
-  const { addPart, getPartById } = useData();
+  const { addPart, getPartById, suppliers } = useData();
   
   const duplicateId = searchParams.get('duplicateId');
 
@@ -76,6 +77,7 @@ export function AddPartForm() {
       partCategory: '',
       unit: 'UN',
       manufacturer: '',
+      supplierId: '',
       model: '',
       year: '',
       technicalSpecifications: '',
@@ -96,6 +98,7 @@ export function AddPartForm() {
           partCategory: partToDuplicate.category,
           unit: partToDuplicate.unit,
           manufacturer: partToDuplicate.manufacturer,
+          supplierId: partToDuplicate.supplierId,
           model: partToDuplicate.vehicleModel,
           year: String(partToDuplicate.vehicleYear),
           technicalSpecifications: partToDuplicate.technicalSpecifications,
@@ -123,6 +126,7 @@ export function AddPartForm() {
         category: values.partCategory,
         unit: values.unit,
         manufacturer: values.manufacturer,
+        supplierId: values.supplierId,
         vehicleModel: values.model,
         vehicleYear: Number(values.year),
         condition: values.condition,
@@ -250,6 +254,32 @@ export function AddPartForm() {
                 <FormControl>
                   <Input placeholder="Ex: Bosch" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="supplierId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fornecedor</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um fornecedor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {suppliers.map(supplier => (
+                      <SelectItem key={supplier.id} value={supplier.id}>{supplier.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

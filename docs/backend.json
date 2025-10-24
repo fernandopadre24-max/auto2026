@@ -57,6 +57,10 @@
           "type": "number",
           "description": "Current quantity of the part in inventory."
         },
+        "supplierId": {
+          "type": "string",
+          "description": "Reference to the supplier of the part."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp of when the part was added to the inventory.",
