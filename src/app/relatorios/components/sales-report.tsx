@@ -91,20 +91,33 @@ export function SalesReport({
       filtered = sales.filter((sale) => sale.employeeId === selectedEmployeeId);
     }
     
-    // Sort by employee name then by date (newest first)
-    return filtered.sort((a, b) => {
-      const employeeA = employees.find(e => e.id === a.employeeId);
-      const employeeB = employees.find(e => e.id === b.employeeId);
-      const nameA = employeeA ? `${employeeA.firstName} ${employeeA.lastName}` : '';
-      const nameB = employeeB ? `${employeeB.firstName} ${employeeB.lastName}` : '';
+    // Sort by date (newest first)
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [sales, selectedEmployeeId]);
 
-      if (nameA < nameB) return -1;
-      if (nameA > nameB) return 1;
+  const groupedSales = React.useMemo(() => {
+    return filteredSales.reduce((acc, sale) => {
+      const employee = employees.find(e => e.id === sale.employeeId);
+      if (employee) {
+        if (!acc[employee.id]) {
+          acc[employee.id] = {
+            employee: employee,
+            sales: [],
+            total: 0
+          };
+        }
+        acc[employee.id].sales.push(sale);
+        acc[employee.id].total += sale.total;
+      }
+      return acc;
+    }, {} as Record<string, { employee: Employee; sales: Sale[]; total: number }>);
+  }, [filteredSales, employees]);
 
-      // If names are equal, sort by date
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-  }, [sales, selectedEmployeeId, employees]);
+  const employeeGroupOrder = React.useMemo(() => {
+    return Object.values(groupedSales)
+      .sort((a,b) => a.employee.firstName.localeCompare(b.employee.firstName))
+      .map(group => group.employee.id);
+  }, [groupedSales]);
 
 
   const salesByEmployeeChartData = React.useMemo(() => {
@@ -143,8 +156,7 @@ export function SalesReport({
     return customer ? `${customer.firstName} ${customer.lastName}`: 'N/A';
   }
 
-  let lastEmployeeId: string | null = null;
-  const colSpan = 5;
+  const colSpan = 6;
 
   return (
     <div className="flex flex-col gap-8">
@@ -238,31 +250,10 @@ export function SalesReport({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSales.length > 0 ? (
-                filteredSales.map((sale) => {
-                  const showEmployeeHeader = selectedEmployeeId === 'all' && sale.employeeId !== lastEmployeeId;
-                  if (showEmployeeHeader) {
-                    lastEmployeeId = sale.employeeId;
-                  }
-                  const isExpanded = expandedEmployees.has(sale.employeeId);
-
-                  return (
-                    <React.Fragment key={sale.id}>
-                      {showEmployeeHeader && (
-                        <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleEmployeeExpansion(sale.employeeId)}>
-                          <TableCell>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                            </Button>
-                          </TableCell>
-                          <TableCell colSpan={colSpan + 1} className="font-bold text-primary">
-                            {getEmployeeName(sale.employeeId)}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                       {(selectedEmployeeId !== 'all' || isExpanded) && (
-                        <TableRow>
-                            {selectedEmployeeId === 'all' && <TableCell />}
+              {totalSales > 0 ? (
+                selectedEmployeeId !== 'all' ? (
+                    filteredSales.map((sale) => (
+                        <TableRow key={sale.id}>
                             <TableCell className="font-medium">{sale.id}</TableCell>
                             <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
                             <TableCell>
@@ -288,13 +279,62 @@ export function SalesReport({
                             {formatCurrency(sale.total)}
                             </TableCell>
                         </TableRow>
-                       )}
-                    </React.Fragment>
-                  );
-                })
+                    ))
+                ) : (
+                    employeeGroupOrder.map(employeeId => {
+                        const group = groupedSales[employeeId];
+                        const isExpanded = expandedEmployees.has(employeeId);
+                        return (
+                            <React.Fragment key={employeeId}>
+                                <TableRow className="bg-muted/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleEmployeeExpansion(employeeId)}>
+                                    <TableCell>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell colSpan={colSpan - 1} className="font-bold text-primary">
+                                        {getEmployeeName(employeeId)}
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-primary">
+                                        {formatCurrency(group.total)}
+                                    </TableCell>
+                                </TableRow>
+                                {isExpanded && group.sales.map(sale => (
+                                     <TableRow key={sale.id}>
+                                        <TableCell />
+                                        <TableCell className="font-medium">{sale.id}</TableCell>
+                                        <TableCell>{getCustomerName(sale.customerId || '')}</TableCell>
+                                        <TableCell>
+                                        <ul>
+                                            {sale.items.map((item, index) => {
+                                            const part = parts.find((p) => p.id === item.partId);
+                                            return (
+                                                <li
+                                                key={index}
+                                                className="text-xs text-muted-foreground"
+                                                >
+                                                {item.quantity}x {part?.name || 'Peça não encontrada'}
+                                                </li>
+                                            );
+                                            })}
+                                        </ul>
+                                        </TableCell>
+                                        <TableCell>{formatDate(sale.date)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary">{formatPaymentMethod(sale)}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                        {formatCurrency(sale.total)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </React.Fragment>
+                        )
+                    })
+                )
               ) : (
                 <TableRow>
-                  <TableCell colSpan={colSpan} className="h-24 text-center">
+                  <TableCell colSpan={colSpan + 1} className="h-24 text-center">
                     Nenhum resultado.
                   </TableCell>
                 </TableRow>
