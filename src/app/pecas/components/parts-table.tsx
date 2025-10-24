@@ -25,6 +25,7 @@ import {
   getFilteredRowModel,
 } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 type PartsTableProps = {
   data: Part[];
@@ -82,9 +83,11 @@ export const columns: ColumnDef<Part>[] = [
       const part = row.original;
       return (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Editar</span>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href={`/pecas/${part.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Editar</span>
+            </Link>
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600">
             <Trash2 className="h-4 w-4" />
