@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button';
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
 };
@@ -30,6 +31,9 @@ const formatCurrency = (value: number) => {
 };
 
 const formatPaymentMethod = (sale: Sale) => {
+    if (sale.paymentMethod === 'Prazo') {
+        return `${sale.termPaymentMethod} (Vence: ${formatDate(sale.dueDate)})`;
+    }
     if (sale.installments > 1) {
         return `${sale.paymentMethod} (${sale.installments}x)`;
     }

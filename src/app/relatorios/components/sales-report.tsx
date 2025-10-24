@@ -60,14 +60,14 @@ const formatDate = (dateString: string | undefined) => {
 };
 
 const formatPaymentMethod = (sale: Sale) => {
+    if (sale.paymentMethod === 'Prazo') {
+      return `${sale.termPaymentMethod} (Vence: ${formatDate(sale.dueDate)})`;
+    }
     if (sale.paymentMethod === 'Parcelado' && sale.installments > 1) {
         return `Cartão em ${sale.installments}x`;
     }
      if (sale.paymentMethod === 'Cartão' && sale.installments > 1) {
         return `Cartão em ${sale.installments}x`;
-    }
-    if (sale.paymentMethod === 'Prazo') {
-      return `${sale.termPaymentMethod} (Vence: ${formatDate(sale.dueDate)})`;
     }
     return sale.paymentMethod;
 }
