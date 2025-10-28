@@ -43,6 +43,10 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
   const { toast } = useToast();
   const [employeeToDelete, setEmployeeToDelete] =
     React.useState<Employee | null>(null);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const handleDelete = (employee: Employee) => {
     setEmployeeToDelete(employee);
@@ -126,9 +130,11 @@ export function FuncionariosTable({ data }: FuncionariosTableProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
+      pagination,
     },
   });
 

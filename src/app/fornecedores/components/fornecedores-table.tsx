@@ -38,9 +38,13 @@ export function FornecedoresTable({ data }: FornecedoresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
-    const { deleteSupplier } = useData();
-    const { toast } = useToast();
-    const [supplierToDelete, setSupplierToDelete] = React.useState<Supplier | null>(null);
+  const { deleteSupplier } = useData();
+  const { toast } = useToast();
+  const [supplierToDelete, setSupplierToDelete] = React.useState<Supplier | null>(null);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const handleDelete = (supplier: Supplier) => {
     setSupplierToDelete(supplier);
@@ -116,9 +120,11 @@ export function FornecedoresTable({ data }: FornecedoresTableProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
+      pagination,
     },
   });
 

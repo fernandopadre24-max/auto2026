@@ -38,9 +38,13 @@ export function ClientesTable({ data }: ClientesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
-    const { deleteCustomer } = useData();
-    const { toast } = useToast();
-    const [customerToDelete, setCustomerToDelete] = React.useState<Customer | null>(null);
+  const { deleteCustomer } = useData();
+  const { toast } = useToast();
+  const [customerToDelete, setCustomerToDelete] = React.useState<Customer | null>(null);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const handleDelete = (customer: Customer) => {
     setCustomerToDelete(customer);
@@ -113,9 +117,11 @@ export function ClientesTable({ data }: ClientesTableProps) {
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
+      pagination,
     },
   });
 
