@@ -93,5 +93,3 @@ export type StoreConfig = {
   address?: string;
   phone?: string;
 };
-
-    
