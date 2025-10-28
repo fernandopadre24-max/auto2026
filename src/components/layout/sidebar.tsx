@@ -14,12 +14,13 @@ import {
   Users,
   BookUser,
   BarChart2,
-  ShoppingCart,
   Settings,
   Calculator,
   Calendar,
   Truck,
   Shirt,
+  Store,
+  Receipt,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -29,7 +30,8 @@ import { ThemeToggleButton } from '@/components/theme-toggle-button';
 
 const menuItems = [
   { href: '/', label: 'Início', icon: Home },
-  { href: '/vendas', label: 'Vendas', icon: ShoppingCart },
+  { href: '/pdv', label: 'PDV', icon: Store },
+  { href: '/vendas', label: 'Vendas', icon: Receipt },
   { href: '/produtos', label: 'Produtos', icon: Shirt },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
@@ -44,6 +46,12 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { config } = useData();
+
+  const isPdvPage = pathname === '/pdv';
+
+  if (isPdvPage) {
+    return null;
+  }
 
   return (
     <>
@@ -85,5 +93,3 @@ export function AppSidebar() {
     </>
   );
 }
-
-    

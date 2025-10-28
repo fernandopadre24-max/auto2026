@@ -29,6 +29,7 @@ const mockCustomers: Customer[] = [
 const mockEmployees: Employee[] = [
   { id: '1', employeeCode: 'FUNC-001', firstName: 'Carlos', lastName: 'Pereira', email: 'carlos.p@email.com', phoneNumber: '31977776666', role: 'Vendedor', address: 'Rua das Flores, 123, Belo Horizonte - MG', cpf: '111.222.333-44', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
   { id: '2', employeeCode: 'FUNC-002', firstName: 'Ana', lastName: 'Oliveira', email: 'ana.o@email.com', phoneNumber: '41966665555', role: 'Gerente', address: 'Avenida do Sol, 456, Curitiba - PR', cpf: '555.666.777-88', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: '3', employeeCode: 'FUNC-003', firstName: 'Sofia', lastName: 'Alves', email: 'sofia.a@email.com', phoneNumber: '51955554444', role: 'Caixa', address: 'Rua das Gaivotas, 789, Porto Alegre - RS', cpf: '999.888.777-66', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 ];
 
 const mockSuppliers: Supplier[] = [
@@ -37,8 +38,9 @@ const mockSuppliers: Supplier[] = [
 ];
 
 const mockSales: Sale[] = [
-    { id: '1', employeeId: '1', customerId: '1', items: [{ productId: '1', quantity: 2, unitPrice: 49.90, discount: 0 }], total: 99.80, paymentMethod: 'Cartão', installments: 1, date: new Date().toISOString(), status: 'Pago' },
-    { id: '2', employeeId: '1', customerId: '2', items: [{ productId: '2', quantity: 1, unitPrice: 149.90, discount: 10 }], total: 139.90, paymentMethod: 'PIX', installments: 1, date: new Date().toISOString(), status: 'Pago' },
+    { id: '1', employeeId: '1', customerId: '1', items: [{ productId: '1', quantity: 2, unitPrice: 49.90, discount: 0 }], total: 99.80, paymentMethod: 'Cartão', installments: 1, date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(), status: 'Pago' },
+    { id: '2', employeeId: '2', customerId: '2', items: [{ productId: '2', quantity: 1, unitPrice: 149.90, discount: 10 }], total: 139.90, paymentMethod: 'PIX', installments: 1, date: new Date(new Date().setDate(new Date().getDate() - 2)).toISOString(), status: 'Pago' },
+    { id: '3', employeeId: '1', customerId: '2', items: [{ productId: '3', quantity: 1, unitPrice: 199.90, discount: 0 }], total: 199.90, paymentMethod: 'Prazo', installments: 1, date: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString(), status: 'Pendente', dueDate: new Date(new Date().setDate(new Date().getDate() + 25)).toISOString(), termPaymentMethod: 'Boleto' },
 ];
 
 const mockConfig: StoreConfig = {
@@ -85,6 +87,8 @@ interface DataContextProps {
   sales: Sale[];
   config: StoreConfig;
   isLoading: boolean;
+  authenticatedEmployee: Employee | null;
+  setAuthenticatedEmployee: (employee: Employee | null) => void;
   saveConfig: (newConfig: StoreConfig) => void;
   updateCustomer: (updatedCustomer: Customer) => void;
   addCustomer: (newCustomer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -113,12 +117,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [suppliers, setSuppliers] = useLocalStorage('suppliers', mockSuppliers);
   const [sales, setSales] = useLocalStorage('sales', mockSales);
   const [config, setConfig] = useLocalStorage('config', mockConfig);
+  const [authenticatedEmployee, setAuthenticatedEmployee] = useState<Employee | null>(null);
 
-  // Simulate data fetching and check if localStorage is initialized
   useEffect(() => {
     if (typeof window !== 'undefined') {
         const storedProducts = window.localStorage.getItem('products');
-        if (!storedProducts || JSON.parse(storedProducts).length < 5) { // Simple check to see if mock data is old
+        if (!storedProducts || JSON.parse(storedProducts).length < 5) {
             setProducts(mockProducts);
             setCustomers(mockCustomers);
             setEmployees(mockEmployees);
@@ -126,9 +130,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
             setSales(mockSales);
             setConfig(mockConfig);
         }
+
+        const storedEmployee = sessionStorage.getItem('authenticatedEmployee');
+        if (storedEmployee) {
+            setAuthenticatedEmployee(JSON.parse(storedEmployee));
+        }
+
         setIsLoading(false);
     }
-  }, [setProducts, setCustomers, setEmployees, setSales, setConfig, setSuppliers]);
+  }, []);
 
   const saveConfig = (newConfig: StoreConfig) => {
     setConfig(newConfig);
@@ -237,6 +247,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     sales,
     config,
     isLoading,
+    authenticatedEmployee,
+    setAuthenticatedEmployee,
     saveConfig,
     updateCustomer,
     addCustomer,

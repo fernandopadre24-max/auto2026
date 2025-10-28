@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { DataProvider, useData } from '@/lib/data';
 import { useEffect } from 'react';
 import { ThemeProvider } from 'next-themes';
+import { useRouter, usePathname } from 'next/navigation';
 
 function AppDynamicTitle() {
   const { config } = useData();
@@ -20,12 +21,32 @@ function AppDynamicTitle() {
   return null;
 }
 
+function PDVLayout({ children }: { children: React.ReactNode }) {
+    const { authenticatedEmployee } = useData();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        if(pathname === '/pdv' && !authenticatedEmployee) {
+            // router.push('/');
+        }
+    }, [authenticatedEmployee, router, pathname]);
+
+    return <>{children}</>;
+}
+
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isPdvPage = pathname === '/pdv';
+
+  const LayoutComponent = isPdvPage ? PDVLayout : MainLayout;
+
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
@@ -43,7 +64,7 @@ export default function RootLayout({
         >
           <DataProvider>
             <AppDynamicTitle />
-            <MainLayout>{children}</MainLayout>
+            <LayoutComponent>{children}</LayoutComponent>
           </DataProvider>
         </ThemeProvider>
         <Toaster />
@@ -51,5 +72,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
