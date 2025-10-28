@@ -3,12 +3,12 @@
 
 import {
   generateProductDescription,
-  GenerateProductDescriptionInput,
-} from '@/ai/flows/generate-product-description';
+  type GenerateProductDescriptionInput,
+} from '../../ai/flows/generate-product-description';
 import {
   suggestOptimalPrice,
-  SuggestOptimalPriceInput,
-} from '@/ai/flows/suggest-optimal-price';
+  type SuggestOptimalPriceInput,
+} from '../../ai/flows/suggest-optimal-price';
 
 export async function generateDescriptionAction(
   input: GenerateProductDescriptionInput
