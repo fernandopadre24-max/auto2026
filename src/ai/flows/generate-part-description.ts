@@ -1,65 +1,70 @@
+
 'use server';
 
 /**
- * @fileOverview A flow for generating detailed descriptions of auto parts using AI.
+ * @fileOverview A flow for generating detailed descriptions of clothing products using AI.
  *
- * - generatePartDescription - A function that generates the description.
- * - GeneratePartDescriptionInput - The input type for the generatePartDescription function.
- * - GeneratePartDescriptionOutput - The return type for the generatePartDescription function.
+ * - generateProductDescription - A function that generates the description.
+ * - GenerateProductDescriptionInput - The input type for the generateProductDescription function.
+ * - GenerateProductDescriptionOutput - The return type for the generateProductDescription function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const GeneratePartDescriptionInputSchema = z.object({
-  partName: z.string().describe('The name of the auto part.'),
-  partCategory: z.string().describe('The category of the auto part (e.g., brakes, filters, engine parts).'),
-  manufacturer: z.string().describe('The manufacturer of the auto part.'),
-  model: z.string().describe('The vehicle model the part is compatible with.'),
-  year: z.string().describe('The year the vehicle model was manufactured.'),
-  technicalSpecifications: z.string().describe('Technical specifications of the part, such as dimensions, material, etc.'),
-  condition: z.string().describe('The condition of the part, e.g. new, used, refurbished.'),
+const GenerateProductDescriptionInputSchema = z.object({
+  productName: z.string().describe('The name of the clothing product.'),
+  category: z.string().describe('The category of the product (e.g., T-shirts, Jeans, Dresses).'),
+  brand: z.string().describe('The brand of the product.'),
+  gender: z.string().describe('The target gender for the product (e.g., Masculino, Feminino, Unissex).'),
+  color: z.string().describe('The color of the product.'),
+  material: z.string().describe('The material of the product (e.g., Cotton, Polyester, Denim).'),
+  size: z.string().describe('The size of the product.'),
+  condition: z.string().describe('The condition of the product, e.g. new, used.'),
 });
 
-export type GeneratePartDescriptionInput = z.infer<typeof GeneratePartDescriptionInputSchema>;
+export type GenerateProductDescriptionInput = z.infer<typeof GenerateProductDescriptionInputSchema>;
 
-const GeneratePartDescriptionOutputSchema = z.object({
-  description: z.string().describe('A detailed and professional description of the auto part.'),
+const GenerateProductDescriptionOutputSchema = z.object({
+  description: z.string().describe('A detailed and professional description of the clothing product.'),
 });
 
-export type GeneratePartDescriptionOutput = z.infer<typeof GeneratePartDescriptionOutputSchema>;
+export type GenerateProductDescriptionOutput = z.infer<typeof GenerateProductDescriptionOutputSchema>;
 
-export async function generatePartDescription(input: GeneratePartDescriptionInput): Promise<GeneratePartDescriptionOutput> {
-  return generatePartDescriptionFlow(input);
+export async function generateProductDescription(input: GenerateProductDescriptionInput): Promise<GenerateProductDescriptionOutput> {
+  return generateProductDescriptionFlow(input);
 }
 
-const generatePartDescriptionPrompt = ai.definePrompt({
-  name: 'generatePartDescriptionPrompt',
-  input: {schema: GeneratePartDescriptionInputSchema},
-  output: {schema: GeneratePartDescriptionOutputSchema},
-  prompt: `You are an expert in creating detailed and professional descriptions for auto parts.
+const generateProductDescriptionPrompt = ai.definePrompt({
+  name: 'generateProductDescriptionPrompt',
+  input: {schema: GenerateProductDescriptionInputSchema},
+  output: {schema: GenerateProductDescriptionOutputSchema},
+  prompt: `You are an expert in creating detailed and professional descriptions for clothing products.
 
-  Using the information provided below, generate a comprehensive description of the auto part that can be used in an online store or catalog.
+  Using the information provided below, generate a comprehensive description of the product that can be used in an online store or catalog.
   Include relevant details to help customers make informed purchase decisions.
 
-  Part Name: {{partName}}
-  Part Category: {{partCategory}}
-  Manufacturer: {{manufacturer}}
-  Model: {{model}}
-  Year: {{year}}
-  Technical Specifications: {{technicalSpecifications}}
+  Product Name: {{productName}}
+  Category: {{category}}
+  Brand: {{brand}}
+  Gender: {{gender}}
+  Color: {{color}}
+  Material: {{material}}
+  Size: {{size}}
   Condition: {{condition}}
   `,
 });
 
-const generatePartDescriptionFlow = ai.defineFlow(
+const generateProductDescriptionFlow = ai.defineFlow(
   {
-    name: 'generatePartDescriptionFlow',
-    inputSchema: GeneratePartDescriptionInputSchema,
-    outputSchema: GeneratePartDescriptionOutputSchema,
+    name: 'generateProductDescriptionFlow',
+    inputSchema: GenerateProductDescriptionInputSchema,
+    outputSchema: GenerateProductDescriptionOutputSchema,
   },
   async input => {
-    const {output} = await generatePartDescriptionPrompt(input);
+    const {output} = await generateProductDescriptionPrompt(input);
     return output!;
   }
 );
+
+    

@@ -1,19 +1,20 @@
+
 'use server';
 
 import {
-  generatePartDescription,
-  GeneratePartDescriptionInput,
-} from '@/ai/flows/generate-part-description';
+  generateProductDescription,
+  GenerateProductDescriptionInput,
+} from '@/ai/flows/generate-product-description';
 import {
   suggestOptimalPrice,
   SuggestOptimalPriceInput,
 } from '@/ai/flows/suggest-optimal-price';
 
 export async function generateDescriptionAction(
-  input: GeneratePartDescriptionInput
+  input: GenerateProductDescriptionInput
 ) {
   try {
-    const result = await generatePartDescription(input);
+    const result = await generateProductDescription(input);
     return { description: result.description };
   } catch (e) {
     console.error(e);
@@ -34,3 +35,5 @@ export async function suggestPriceAction(input: SuggestOptimalPriceInput) {
     };
   }
 }
+
+    

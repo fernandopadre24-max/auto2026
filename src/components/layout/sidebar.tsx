@@ -11,16 +11,15 @@ import {
 } from '@/components/ui/sidebar';
 import {
   Home,
-  Wrench,
   Users,
   BookUser,
   BarChart2,
-  Car,
   ShoppingCart,
   Settings,
   Calculator,
   Calendar,
   Truck,
+  Shirt,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -31,7 +30,7 @@ import { ThemeToggleButton } from '@/components/theme-toggle-button';
 const menuItems = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/vendas', label: 'Vendas', icon: ShoppingCart },
-  { href: '/pecas', label: 'Peças', icon: Wrench },
+  { href: '/produtos', label: 'Produtos', icon: Shirt },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/funcionarios', label: 'Funcionários', icon: BookUser },
   { href: '/fornecedores', label: 'Fornecedores', icon: Truck },
@@ -51,11 +50,11 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Car className="h-5 w-5" />
+            <Shirt className="h-5 w-5" />
           </div>
           {state === 'expanded' && (
             <h1 className="text-xl font-semibold font-headline truncate">
-              {config.storeName || 'AutoParts'}
+              {config.storeName || 'Fashion Store'}
             </h1>
           )}
           <div className="flex-1" />
@@ -68,7 +67,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === href}
+                isActive={pathname.startsWith(href) && (href !== '/' || pathname === '/')}
                 tooltip={{ children: label }}
               >
                 <Link href={href}>
@@ -86,3 +85,5 @@ export function AppSidebar() {
     </>
   );
 }
+
+    

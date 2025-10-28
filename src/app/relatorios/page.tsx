@@ -7,7 +7,7 @@ import { useData } from '@/lib/data';
 
 
 export default function RelatoriosPage() {
-  const { sales, employees, parts, customers, isLoading } = useData();
+  const { sales, employees, products, customers, isLoading } = useData();
 
   return (
     <div className="flex flex-col gap-8">
@@ -18,8 +18,10 @@ export default function RelatoriosPage() {
           <Skeleton className="h-96 w-full" />
         </div>
       ) : (
-        <SalesReport sales={sales} employees={employees} parts={parts} customers={customers} />
+        <SalesReport sales={sales} employees={employees} products={products} customers={customers} />
       )}
     </div>
   );
 }
+
+    

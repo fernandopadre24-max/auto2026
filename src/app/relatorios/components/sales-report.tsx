@@ -38,7 +38,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import type { Sale, Employee, Part, Customer } from '@/lib/types';
+import type { Sale, Employee, Product, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, ChevronDown, ChevronRight, DollarSign, Hourglass, ShoppingCart, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,7 @@ import { subDays } from 'date-fns';
 type SalesReportProps = {
   sales: Sale[];
   employees: Employee[];
-  parts: Part[];
+  products: Product[];
   customers: Customer[];
 };
 
@@ -98,7 +98,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 export function SalesReport({
   sales,
   employees,
-  parts,
+  products,
   customers
 }: SalesReportProps) {
   const { toast } = useToast();
@@ -192,10 +192,10 @@ export function SalesReport({
         dataForChart.forEach(sale => {
             if (sale.status === 'Pago') {
                 sale.items.forEach(item => {
-                    const part = parts.find(p => p.id === item.partId);
-                    if (part) {
-                        const currentTotal = categoryMap.get(part.category) || 0;
-                        categoryMap.set(part.category, currentTotal + (item.unitPrice * item.quantity - item.discount));
+                    const product = products.find(p => p.id === item.productId);
+                    if (product) {
+                        const currentTotal = categoryMap.get(product.category) || 0;
+                        categoryMap.set(product.category, currentTotal + (item.unitPrice * item.quantity - item.discount));
                     }
                 });
             }
@@ -222,7 +222,7 @@ export function SalesReport({
     });
 
     return Array.from(salesMap.values());
-  }, [filteredSales, employees, parts, chartType]);
+  }, [filteredSales, employees, products, chartType]);
 
   const totalFilteredRevenue = React.useMemo(() => {
     return filteredSales.reduce((acc, sale) => acc + sale.total, 0);
@@ -296,7 +296,7 @@ export function SalesReport({
 
   const getChartTitle = () => {
     switch (chartType) {
-        case 'revenueByCategory': return 'Receita por Categoria de Peça (Vendas Pagas)';
+        case 'revenueByCategory': return 'Receita por Categoria de Produto (Vendas Pagas)';
         case 'salesByEmployee': return 'Número de Vendas por Funcionário';
         case 'revenueByEmployee':
         default: return 'Desempenho por Funcionário (Vendas Pagas)';
@@ -435,13 +435,13 @@ export function SalesReport({
                             <TableCell className="py-2 px-4">
                             <ul>
                                 {sale.items.map((item, index) => {
-                                const part = parts.find((p) => p.id === item.partId);
+                                const product = products.find((p) => p.id === item.productId);
                                 return (
                                     <li
                                     key={index}
                                     className="text-gray-600"
                                     >
-                                    {item.quantity}x {part?.name || 'Peça não encontrada'}
+                                    {item.quantity}x {product?.name || 'Produto não encontrado'}
                                     </li>
                                 );
                                 })}
@@ -506,13 +506,13 @@ export function SalesReport({
                                         <TableCell className="py-2 px-4">
                                         <ul>
                                             {sale.items.map((item, index) => {
-                                            const part = parts.find((p) => p.id === item.partId);
+                                            const product = products.find((p) => p.id === item.productId);
                                             return (
                                                 <li
                                                 key={index}
                                                 className="text-gray-600"
                                                 >
-                                                {item.quantity}x {part?.name || 'Peça não encontrada'}
+                                                {item.quantity}x {product?.name || 'Produto não encontrado'}
                                                 </li>
                                             );
                                             })}
@@ -576,3 +576,5 @@ export function SalesReport({
     </div>
   );
 }
+
+    

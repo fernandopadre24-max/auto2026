@@ -13,7 +13,7 @@ function AppDynamicTitle() {
     if (config.storeName) {
       document.title = config.storeName;
     } else {
-      document.title = 'AutoParts Manager';
+      document.title = 'Fashion Store';
     }
   }, [config.storeName]);
 
@@ -51,3 +51,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

@@ -27,48 +27,68 @@
         "storeName"
       ]
     },
-    "Part": {
+    "Product": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Part",
+      "title": "Product",
       "type": "object",
-      "description": "Represents an auto part in the inventory.",
+      "description": "Represents a clothing product in the inventory.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the part."
+          "description": "Unique identifier for the product."
         },
         "name": {
           "type": "string",
-          "description": "Name of the part."
+          "description": "Name of the product."
         },
         "description": {
           "type": "string",
-          "description": "Detailed description of the part."
+          "description": "Detailed description of the product."
         },
         "purchasePrice": {
           "type": "number",
-          "description": "The price at which the part was purchased."
+          "description": "The price at which the product was purchased."
         },
         "salePrice": {
           "type": "number",
-          "description": "The price at which the part is sold."
+          "description": "The price at which the product is sold."
         },
-        "quantity": {
+        "stock": {
           "type": "number",
-          "description": "Current quantity of the part in inventory."
+          "description": "Current quantity of the product in inventory."
         },
         "supplierId": {
           "type": "string",
-          "description": "Reference to the supplier of the part."
+          "description": "Reference to the supplier of the product."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the product (e.g., T-shirts, Jeans, Dresses)."
+        },
+        "size": {
+          "type": "string",
+          "description": "Size of the product (e.g., S, M, L, 40, 42)."
+        },
+        "color": {
+          "type": "string",
+          "description": "Color of the product."
+        },
+        "gender": {
+          "type": "string",
+          "description": "Target gender for the product (e.g., Masculino, Feminino, Unissex)."
+        },
+        "sku": {
+          "type": "string",
+          "description": "Stock Keeping Unit."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp of when the part was added to the inventory.",
+          "description": "Timestamp of when the product was added to the inventory.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp of when the part was last updated.",
+          "description": "Timestamp of when the product was last updated.",
           "format": "date-time"
         }
       },
@@ -77,7 +97,8 @@
         "name",
         "purchasePrice",
         "salePrice",
-        "quantity"
+        "stock",
+        "category"
       ]
     },
     "Employee": {
@@ -252,17 +273,17 @@
           "type": "string",
           "description": "Reference to Sale. (Relationship: Sale 1:N SaleItem)"
         },
-        "partId": {
+        "productId": {
           "type": "string",
-          "description": "Reference to Part. (Relationship: Part 1:N SaleItem)"
+          "description": "Reference to Product. (Relationship: Product 1:N SaleItem)"
         },
         "quantity": {
           "type": "number",
-          "description": "Quantity of the part sold in this sale item."
+          "description": "Quantity of the product sold in this sale item."
         },
         "unitPrice": {
           "type": "number",
-          "description": "Price of a single unit of the part at the time of the sale."
+          "description": "Price of a single unit of the product at the time of the sale."
         },
         "createdAt": {
           "type": "string",
@@ -278,7 +299,7 @@
       "required": [
         "id",
         "saleId",
-        "partId",
+        "productId",
         "quantity",
         "unitPrice"
       ]
@@ -355,17 +376,17 @@
         }
       },
       {
-        "path": "/parts/{partId}",
+        "path": "/products/{productId}",
         "definition": {
-          "entityName": "Part",
+          "entityName": "Product",
           "schema": {
-            "$ref": "#/backend/entities/Part"
+            "$ref": "#/backend/entities/Product"
           },
-          "description": "Stores auto part information.",
+          "description": "Stores product information.",
           "params": [
             {
-              "name": "partId",
-              "description": "The unique identifier for the part."
+              "name": "productId",
+              "description": "The unique identifier for the product."
             }
           ]
         }
@@ -441,7 +462,7 @@
           "schema": {
             "$ref": "#/backend/entities/SaleItem"
           },
-          "description": "Stores items within a sale transaction. References saleId and partId.",
+          "description": "Stores items within a sale transaction. References saleId and productId.",
           "params": [
             {
               "name": "saleId",
@@ -455,6 +476,8 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to efficiently store and manage data for the AutoParts Manager application. It focuses on clarity, scalability, and security, adhering to the principles of Authorization Independence and Structural Segregation.  Each entity (Part, Employee, Customer, Sale, SaleItem, and StoreConfig) has its own dedicated collection.  Path-based ownership is employed where applicable to simplify security rules.  \n\nStore configuration is stored in a singleton document `/storeConfig/main` for easy access.\n\nParts are stored in a top-level `parts` collection. Employees and Customers are similarly stored in `employees` and `customers` collections respectively.\n\nSales are organized under the `sales` collection. Each sale has a `customerId` and `employeeId` to link back to the respective entities. SaleItems are stored as subcollections under each `sale` document, ensuring data locality and efficient querying of items within a specific sale. Relationships are modeled via document references.\n\n**Authorization Independence:** No `get()` calls are required in security rules, as authorization depends solely on `request.auth.uid` and the roles of the authenticated user, which is managed separately. \n\n**QAPs (Rules are not Filters):** The structure facilitates secure list operations by segregating data based on entity type and relationships. This prevents the need for complex filtering in security rules and ensures that only authorized data is accessed."
+    "reasoning": "The Firestore data structure is designed to efficiently store and manage data for the Fashion Store application. It focuses on clarity, scalability, and security, adhering to the principles of Authorization Independence and Structural Segregation.  Each entity (Product, Employee, Customer, Sale, SaleItem, and StoreConfig) has its own dedicated collection.  Path-based ownership is employed where applicable to simplify security rules.  \n\nStore configuration is stored in a singleton document `/storeConfig/main` for easy access.\n\nProducts are stored in a top-level `products` collection. Employees and Customers are similarly stored in `employees` and `customers` collections respectively.\n\nSales are organized under the `sales` collection. Each sale has a `customerId` and `employeeId` to link back to the respective entities. SaleItems are stored as subcollections under each `sale` document, ensuring data locality and efficient querying of items within a specific sale. Relationships are modeled via document references.\n\n**Authorization Independence:** No `get()` calls are required in security rules, as authorization depends solely on `request.auth.uid` and the roles of the authenticated user, which is managed separately. \n\n**QAPs (Rules are not Filters):** The structure facilitates secure list operations by segregating data based on entity type and relationships. This prevents the need for complex filtering in security rules and ensures that only authorized data is accessed."
   }
 }
+
+    

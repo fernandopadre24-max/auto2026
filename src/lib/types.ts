@@ -1,6 +1,6 @@
 
 
-export type Part = {
+export type Product = {
   id: string;
   name: string;
   sku: string;
@@ -8,13 +8,10 @@ export type Part = {
   purchasePrice: number;
   salePrice: number;
   category: string;
-  unit: string;
-  manufacturer: string;
+  size: string;
+  color: string;
+  gender: 'Masculino' | 'Feminino' | 'Unissex';
   supplierId?: string;
-  vehicleModel: string;
-  vehicleYear: number;
-  condition: string;
-  technicalSpecifications: string;
   description: string;
 };
 
@@ -22,6 +19,7 @@ export type RecentSale = {
   id: string;
   customerName: string;
   customerEmail: string;
+
   items: number;
   total: number;
   status: 'Pago' | 'Pendente' | 'Cancelado';
@@ -65,7 +63,7 @@ export type Supplier = {
 };
 
 export type SaleItem = {
-    partId: string;
+    productId: string;
     quantity: number;
     unitPrice: number;
     discount: number;
@@ -95,3 +93,5 @@ export type StoreConfig = {
   address?: string;
   phone?: string;
 };
+
+    

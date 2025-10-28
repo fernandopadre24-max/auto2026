@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Part, Customer, Employee, Sale } from '@/lib/types';
+import type { Product, Customer, Employee, Sale } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { CustomerSearchDialog } from './components/customer-search-dialog';
@@ -27,7 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CashPaymentDialog } from './components/cash-payment-dialog';
 
 type CartItem = {
-  part: Part;
+  product: Product;
   quantity: number;
   unit: string;
   discount: number;
@@ -42,12 +42,12 @@ export default function VendasPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const { parts: allPartsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading, config, addSale } = useData();
+  const { products: allProductsData, customers: allCustomersData, employees: allEmployeesData, isLoading: isDataLoading, config, addSale } = useData();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [lastSaleItems, setLastSaleItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedItem, setSelectedItem] = useState<Part | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState<string>('UN');
   const [lastAction, setLastAction] = useState('Caixa Livre');
@@ -64,45 +64,45 @@ export default function VendasPage() {
     useState<Employee | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
-  const filteredParts = useMemo(() => {
-    if (searchTerm && allPartsData) {
-      return allPartsData.filter(
-        (part) =>
-          part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (part.sku && part.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredProducts = useMemo(() => {
+    if (searchTerm && allProductsData) {
+      return allProductsData.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     return [];
-  }, [searchTerm, allPartsData]);
+  }, [searchTerm, allProductsData]);
 
-  const handleAddItemToCart = (part: Part) => {
-    if (!part) return;
+  const handleAddItemToCart = (product: Product) => {
+    if (!product) return;
 
-    const existingItem = cartItems.find((item) => item.part.id === part.id);
+    const existingItem = cartItems.find((item) => item.product.id === product.id);
 
     if (existingItem) {
       setCartItems(
         cartItems.map((item) =>
-          item.part.id === part.id
+          item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         )
       );
     } else {
-      setCartItems([...cartItems, { part, quantity, unit, discount: 0 }]);
+      setCartItems([...cartItems, { product, quantity, unit, discount: 0 }]);
     }
-    setLastAction(`Adicionado: ${quantity}x ${part.name}`);
+    setLastAction(`Adicionado: ${quantity}x ${product.name}`);
     setSearchTerm('');
     setSelectedItem(null);
     setQuantity(1);
     setUnit('UN');
   };
 
-  const handleSelectSearchedItem = (part: Part) => {
-    setSelectedItem(part);
-    setSearchTerm(part.name);
-    if (part.unit) {
-      setUnit(part.unit);
+  const handleSelectSearchedItem = (product: Product) => {
+    setSelectedItem(product);
+    setSearchTerm(product.name);
+    if (product.size) {
+      setUnit(product.size);
     }
     document.getElementById('item-search')?.focus();
   };
@@ -235,7 +235,7 @@ export default function VendasPage() {
   const subtotal = useMemo(() => {
     return cartItems.reduce(
       (acc, item) =>
-        acc + (item.part.salePrice * item.quantity - item.discount),
+        acc + (item.product.salePrice * item.quantity - item.discount),
       0
     );
   }, [cartItems]);
@@ -268,9 +268,9 @@ export default function VendasPage() {
       employeeId: authenticatedEmployee!.id,
       customerId: details.customer.id,
       items: cartItems.map((item) => ({
-        partId: item.part.id,
+        productId: item.product.id,
         quantity: item.quantity,
-        unitPrice: item.part.salePrice,
+        unitPrice: item.product.salePrice,
         discount: item.discount,
       })),
       total: subtotal,
@@ -414,7 +414,7 @@ export default function VendasPage() {
             <Input
               id="item-search"
               className="flex-1 bg-white text-black"
-              placeholder="Digite para buscar uma peça..."
+              placeholder="Digite para buscar um produto..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -454,15 +454,15 @@ export default function VendasPage() {
               </SelectContent>
             </Select>
           </div>
-          {filteredParts.length > 0 && (
+          {filteredProducts.length > 0 && (
             <div className="absolute top-full left-0 z-10 w-1/2 bg-white border rounded-md shadow-lg mt-1">
-              {filteredParts.map((part) => (
+              {filteredProducts.map((product) => (
                 <div
-                  key={part.id}
+                  key={product.id}
                   className="p-2 hover:bg-gray-200 cursor-pointer text-black"
-                  onClick={() => handleSelectSearchedItem(part)}
+                  onClick={() => handleSelectSearchedItem(product)}
                 >
-                  ({part.sku}) {part.name} - {formatCurrency(part.salePrice)}
+                  ({product.sku}) {product.name} - {formatCurrency(product.salePrice)}
                 </div>
               ))}
             </div>
@@ -497,16 +497,16 @@ export default function VendasPage() {
                 </div>
               <ScrollArea className="h-[250px]">
                 {cartItems.map((item, index) => (
-                  <div key={item.part.id} className="py-1 border-b border-dashed border-gray-200">
+                  <div key={item.product.id} className="py-1 border-b border-dashed border-gray-200">
                     <div className="grid grid-cols-[auto_auto_1fr_auto] gap-x-2">
                         <span>{(index + 1).toString().padStart(3, '0')}</span>
-                        <span>{item.part.sku}</span>
-                        <span className="truncate">{item.part.name}</span>
-                        <span className="text-right">{formatCurrency(item.part.salePrice * item.quantity - item.discount)}</span>
+                        <span>{item.product.sku}</span>
+                        <span className="truncate">{item.product.name}</span>
+                        <span className="text-right">{formatCurrency(item.product.salePrice * item.quantity - item.discount)}</span>
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-x-2">
-                      <span className="pl-16">{item.quantity}{item.unit} X {formatCurrency(item.part.salePrice)}</span>
-                      <span className="text-right font-bold">SUBTOTAL R$ {formatCurrency(item.part.salePrice * item.quantity - item.discount)}</span>
+                      <span className="pl-16">{item.quantity}{item.unit} X {formatCurrency(item.product.salePrice)}</span>
+                      <span className="text-right font-bold">SUBTOTAL R$ {formatCurrency(item.product.salePrice * item.quantity - item.discount)}</span>
                     </div>
                   </div>
                 ))}
@@ -614,7 +614,7 @@ export default function VendasPage() {
             <div>
               <div className="mb-2 rounded-md border border-blue-800 bg-white p-2">
                 <p className="font-bold text-blue-800">
-                  PDV AUTO PARTS MANAGER
+                  PDV FASHION STORE
                 </p>
                 <Input
                   className="mt-1"
@@ -722,3 +722,5 @@ function ActionButton({
     </Button>
   );
 }
+
+    

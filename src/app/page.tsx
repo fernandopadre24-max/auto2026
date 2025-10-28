@@ -48,7 +48,7 @@ const formatPaymentMethod = (sale: Sale) => {
 }
 
 export default function Home() {
-  const { sales, parts, customers, employees, confirmPayment } = useData();
+  const { sales, products, customers, employees, confirmPayment } = useData();
   const { toast } = useToast();
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
 
@@ -88,7 +88,7 @@ export default function Home() {
   const totalRevenue = useMemo(() => sales.filter(s => s.status === 'Pago').reduce((acc, sale) => acc + sale.total, 0), [sales]);
   const pendingAmount = useMemo(() => sales.filter(s => s.status === 'Pendente').reduce((acc, sale) => acc + sale.total, 0), [sales]);
   const recentSalesTotal = useMemo(() => recentSales.reduce((acc, sale) => acc + sale.total, 0), [recentSales]);
-  const totalParts = useMemo(() => parts.reduce((acc, part) => acc + part.stock, 0), [parts]);
+  const totalProducts = useMemo(() => products.reduce((acc, product) => acc + product.stock, 0), [products]);
 
   let lastEmployeeId: string | null = null;
 
@@ -138,11 +138,11 @@ export default function Home() {
         </Card>
         <Card className="bg-orange-500 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Peças em Estoque</CardTitle>
+            <CardTitle className="text-sm font-medium">Itens em Estoque</CardTitle>
             <Package className="h-4 w-4 text-white" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalParts}</div>
+            <div className="text-2xl font-bold">{totalProducts}</div>
             <p className="text-xs text-orange-100">2 abaixo do mínimo</p>
           </CardContent>
         </Card>
@@ -198,8 +198,8 @@ export default function Home() {
                             <TableCell className="py-2 px-4">
                                 <ul className="list-disc list-inside">
                                 {sale.items.map((item, index) => {
-                                    const part = parts.find(p => p.id === item.partId);
-                                    return <li key={index}>{item.quantity}x {part?.name || 'Peça desconhecida'} ({formatCurrency(item.unitPrice)})</li>
+                                    const product = products.find(p => p.id === item.productId);
+                                    return <li key={index}>{item.quantity}x {product?.name || 'Produto desconhecido'} ({formatCurrency(item.unitPrice)})</li>
                                 })}
                                 </ul>
                             </TableCell>
@@ -257,3 +257,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
